@@ -63,11 +63,11 @@ main(argc, argv) int    argc; char   *argv[ ];
     char * tok;
     tok = strtok (a," ");
     printf("tok %s\n", tok);
-    printf("length %lu\n", sizeof(tok));
-    int i;
-    for(i=0; i<sizeof(tok); i++){
-      printf("elemnt %c\n", tok[i]);
-    }
+    // printf("length %lu\n", sizeof(tok));
+    // int i;
+    // for(i=0; i<sizeof(tok); i++){
+    //   printf("elemnt %c\n", tok[i]);
+    // }
     if(a[0]=='l'){
       printf("Local command: %s\n", a);
     }
@@ -76,6 +76,8 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(!strcmp(tok, "get")){
       printf("get\n");
+      tok = strtok (NULL, " ,.-");
+      printf("file %s\n", tok);
     }
     else if(!strcmp(tok, "put")){
       printf("put\n");
