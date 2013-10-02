@@ -99,7 +99,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
     }
 
     else if (childpid == 0){
-      printf("pid 0");
+      printf("pid 0\n");
       close(sdw);
       
       char a[10];

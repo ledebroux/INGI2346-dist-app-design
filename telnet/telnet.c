@@ -36,7 +36,7 @@ main(argc, argv) int    argc; char   *argv[ ];
     perror("connect error in telnet");
     exit(-1);
   }
-  
+
   char a[10];
 
   while(strcmp(a, "bye")) {
@@ -46,8 +46,14 @@ main(argc, argv) int    argc; char   *argv[ ];
     char * tok;
     tok = strtok (a," ");
 
-    if(a[0]=='l'){
-      printf("Local command: %s\n", a);
+    if(!strcmp(tok, "lpwd")){
+      printf("Local command: pwd\n");
+    }
+    else if(!strcmp(tok, "lcp")){
+      printf("Local command: cp\n"); 
+    }
+    else if(!strcmp(tok, "lls")){
+      printf("Local command: ls\n"); 
     }
     else if(!strcmp(tok, "bye")){
       printf("bye\n");
