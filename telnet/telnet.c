@@ -1,8 +1,11 @@
 #include <sys/types.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  10023
-#define M2_ADDR "130.104.230.234"
+#define TELNETD_PORT  7000
+#define M2_ADDR "130.104.172.88"
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
@@ -30,5 +33,5 @@ main(argc, argv) int    argc; char   *argv[ ];
         perror("connect error in telnet");
         exit(-1);
     }
-          /*client code */
+          printf("ok");
 }
