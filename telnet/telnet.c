@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8008
+#define TELNETD_PORT  8010
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -37,17 +37,28 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
   
-  char a[10];
+  char buffer[255];
 
-  while(strcmp(a, "bye")) {
+  while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
-    gets(a);
+    gets(buffer);
+
+    /* Transfer from buffer to a char* input with the exact right size */
+    int i;
+    int j;
+    for(i=0; buffer[i] != '\0'; i++){}
+    i++;
+    char str[i];
+    for(j=0; j<i; j++){
+      str[j] = buffer[j];
+    }
+    printf("%lu", sizeof(str));
 
     char * tok;
-    tok = strtok (a," ");
+    tok = strtok (str," ");
 
-    if(a[0]=='l'){
-      printf("Local command: %s\n", a);
+    if(str[0]=='l'){
+      printf("Local command: %s\n", str);
     }
     else if(!strcmp(tok, "bye")){
       printf("bye\n");
@@ -61,8 +72,8 @@ main(argc, argv) int    argc; char   *argv[ ];
       printf("put\n");
     }
     else{
-      printf("Distant host must perform: %s\n", a);
-      write(sd1, a, sizeof(a));
+      printf("Distant host must perform: %s\n", str);
+      write(sd1, str, sizeof(str));
     }
 
     // while (tok != NULL)
