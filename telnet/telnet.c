@@ -41,7 +41,7 @@ main(argc, argv) int    argc; char   *argv[ ];
 
   while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
-    gets(buffer);
+    fgets(buffer,255,stdin);
 
     /* Transfer from buffer to a char* input with the exact right size */
     int i;
