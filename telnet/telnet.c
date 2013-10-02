@@ -12,6 +12,7 @@ int getInputString(char*);
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
+  printf("while");
   int sd1;
   struct sockaddr_in     m2;
 
@@ -37,9 +38,11 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
   char *dest;
+  printf("while_before");
   while(strcmp(dest, "close")) {
+    printf("while");
     printf("Enter a command\n");
-	getInputString(dest);
+	  getInputString(dest);
     printf("comand %c", dest[0]);
     if(dest[0]=='l'){
       printf("Local command: %s\n", dest);
@@ -69,6 +72,7 @@ main(argc, argv) int    argc; char   *argv[ ];
 }
 
 int getInputString(char* pStr){
+  printf("ok1");
 	unsigned int len_max = 128;
     unsigned int current_size = 0;
  
@@ -79,12 +83,12 @@ int getInputString(char* pStr){
     {
 	int c = EOF;
 	unsigned int i =0;
-  c = getchar();
+  // c = getchar();
   printf("ok");
-  printf("%i", c == '\n');
+  // printf("%i", c == '\n');
   printf("ok2");
         //accept user input until hit enter or end of file
-	while (( c = getchar() ) != '\n' && c != EOF)
+	while (( c = getchar() ) != EOF)
 	{
 		pStr[i++]=(char)c;
  
