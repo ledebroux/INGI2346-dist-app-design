@@ -37,14 +37,25 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
 
-  char a[10];
+  char buffer[255];
 
-  while(strcmp(a, "bye")) {
+  while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
-    gets(a);
+    gets(buffer);
+
+    /* Transfer from buffer to a char* input with the exact right size */
+    int i;
+    int j;
+    for(i=0; buffer[i] != '\0'; i++){}
+    i++;
+    char str[i];
+    for(j=0; j<i; j++){
+      str[j] = buffer[j];
+    }
+    // printf("%lu", sizeof(str));
 
     char * tok;
-    tok = strtok (a," ");
+    tok = strtok (str," ");
 
     if(!strcmp(tok, "lpwd")){
       printf("Local command: pwd\n");
@@ -60,15 +71,18 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(!strcmp(tok, "get")){
       printf("get\n");
+      printf("gettt %s\n", tok);
+      write(sd1, tok, sizeof(str));
       tok = strtok (NULL, " ,.-");
       printf("file %s\n", tok);
+      write(sd1, tok, sizeof(str));
     }
     else if(!strcmp(tok, "put")){
       printf("put\n");
     }
     else{
-      printf("Distant host must perform: %s\n", a);
-      write(sd1, a, sizeof(a));
+      printf("Distant host must perform: %s\n", str);
+      write(sd1, str, sizeof(str));
     }
 
     // while (tok != NULL)
