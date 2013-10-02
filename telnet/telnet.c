@@ -35,42 +35,55 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
   printf("ok");
-  char a[6];
+  char a[256];
 
   while(strcmp(a, "bye")) {
     printf("Enter a command\n");
     gets(a);
-    printf("comand %c\n", a[0]);
-    printf("coman2 %c\n", a[1]);
-    if(a[1]=='\0'){
-      printf("woot\n");
-    } else {
-      printf("ooo + %i\n", a[1]);
-    }
+    // printf("comand %c\n", a[0]);
+    // printf("coman2 %c\n", a[1]);
+    // if(a[1]=='\0'){
+    //   printf("woot\n");
+    // } else {
+    //   printf("ooo + %i\n", a[1]);
+    // }
 
-    if(a[2]=='\0'){
-      printf("woot2 + %i\n", a[1]);
-    } else {
-      printf("ooo2 + %i\n", a[1]);
-    }
+    // if(a[2]=='\0'){
+    //   printf("woot2 + %i\n", a[1]);
+    // } else {
+    //   printf("ooo2 + %i\n", a[1]);
+    // }
 
+    char * tok;
+    tok = strtok (a," ");
+    printf("tok %s\n", tok);
+    printf("length %lu\n", sizeof(tok));
+    int i;
+    for(i=0; i<sizeof(tok); i++){
+      printf("elemnt %c\n", tok[i]);
+    }
     if(a[0]=='l'){
       printf("Local command: %s\n", a);
     }
-    else if(strcmp(a, "bye")){
-      printf("bye");
+    else if(!strcmp(tok, "bye")){
+      printf("bye\n");
     }
-    else if(strcmp(a, "get")){
-      printf("get");
+    else if(!strcmp(tok, "get")){
+      printf("get\n");
     }
-    else if(strcmp(a, "put")){
-      printf("put");
+    else if(!strcmp(tok, "put")){
+      printf("put\n");
     }
     else{
       printf("Distant host must perform: %s\n", a);
       write(sd1, a, sizeof(a));
     }
-    
+
+    while (tok != NULL)
+    {
+      printf ("%s\n",tok);
+      tok = strtok (NULL, " ,.-");
+    }
     printf("c: %lu", sizeof(a));
     printf("c: %lu", sizeof("close"));
     // int i;
