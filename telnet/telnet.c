@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8000
+#define TELNETD_PORT  8008
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -36,38 +36,15 @@ main(argc, argv) int    argc; char   *argv[ ];
     perror("connect error in telnet");
     exit(-1);
   }
-  printf("ok");
-  char a[256];
+  char a[10];
 
   while(strcmp(a, "bye")) {
     printf("Enter a command\n");
     gets(a);
-    // printf("comand %c\n", a[0]);
-    // printf("coman2 %c\n", a[1]);
-    // if(a[1]=='\0'){
-    //   printf("woot\n");
-    // } else {
-    //   printf("ooo + %i\n", a[1]);
-    // }
-
-    // if(a[2]=='\0'){
-    //   printf("woot2 + %i\n", a[1]);
-    // } else {
-    //   printf("ooo2 + %i\n", a[1]);
-    // }
-
-    // char o[256];
-    // shrink(a, o);
-    // printf("size %lu\n", sizeof(o));
 
     char * tok;
     tok = strtok (a," ");
-    printf("tok %s\n", tok);
-    // printf("length %lu\n", sizeof(tok));
-    // int i;
-    // for(i=0; i<sizeof(tok); i++){
-    //   printf("elemnt %c\n", tok[i]);
-    // }
+
     if(a[0]=='l'){
       printf("Local command: %s\n", a);
     }
@@ -87,29 +64,13 @@ main(argc, argv) int    argc; char   *argv[ ];
       write(sd1, a, sizeof(a));
     }
 
-    while (tok != NULL)
-    {
-      printf ("%s\n",tok);
-      tok = strtok (NULL, " ,.-");
-    }
-    printf("c: %lu", sizeof(a));
-    printf("c: %lu", sizeof("close"));
-    // int i;
-    // for(i=0; i<=sizeof(a); i++){
-    //   printf("%c\n", a[i]);
+    // while (tok != NULL)
+    // {
+    //   printf ("%s\n",tok);
+    //   tok = strtok (NULL, " ,.-");
     // }
 
-  }
-  // printf("Integer that you have entered is %s\n", a);
-
-  // write(sd1, a, sizeof(a));
-  // sleep(20);
-  // int i;
-  // for( i=0 ; ; i++ ){
-  //     if (i%1000000000==0){
-  //         printf("%i", i);
-  //     }
-  // } 
+  } 
 }
 
 int shrink(char* chaine, char* output){
