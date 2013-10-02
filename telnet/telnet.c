@@ -90,3 +90,13 @@ main(argc, argv) int    argc; char   *argv[ ];
   //     }
   // } 
 }
+
+int shrink(char* chaine, char* output){
+  int i;
+  int j;
+  for(i=0; chaine[i] != '\0'; i++){}
+  output = realloc(output, i*sizeor(char));
+  for(j=0; j<=i; j++){
+      output[j] = chaine[j];
+  }
+}
