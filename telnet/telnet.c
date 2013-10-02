@@ -8,6 +8,8 @@
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
+int getInputString(char*);
+
 main(argc, argv) int    argc; char   *argv[ ];
 {
   int sd1;
@@ -34,23 +36,20 @@ main(argc, argv) int    argc; char   *argv[ ];
     perror("connect error in telnet");
     exit(-1);
   }
-  printf("ok");
-  char a[10];
-
-  while(strcmp(a, "close")) {
+  char *dest;
+  while(strcmp(dest, "close")) {
     printf("Enter a command\n");
-    gets(a);
-    printf("comand %c", a[0]);
-    if(a[0]=='l'){
-      printf("Local command: %s\n", a);
+	getInputString(dest);
+    printf("comand %c", dest[0]);
+    if(dest[0]=='l'){
+      printf("Local command: %s\n", dest);
     }
     else{
-      printf("Distant host must perform: %s\n", a);
-      write(sd1, a, sizeof(a));
+      printf("Distant host must perform: %s\n", dest);
+      write(sd1, dest, sizeof(dest));
     }
     
-    printf("c: %lu", sizeof(a));
-    printf("c: %lu", sizeof("close"));
+    printf("c: %lu", sizeof(dest));
     // int i;
     // for(i=0; i<=sizeof(a); i++){
     //   printf("%c\n", a[i]);
@@ -67,4 +66,33 @@ main(argc, argv) int    argc; char   *argv[ ];
   //         printf("%i", i);
   //     }
   // } 
+}
+
+int getInputString(char* pStr){
+	unsigned int len_max = 128;
+    unsigned int current_size = 0;
+ 
+    pStr = malloc(len_max);
+    current_size = len_max;
+ 
+    if(pStr != NULL)
+    {
+	int c = EOF;
+	unsigned int i =0;
+        //accept user input until hit enter or end of file
+	while (( c = getchar() ) != '\n' && c != EOF)
+	{
+		pStr[i++]=(char)c;
+ 
+		//if i reached maximize size then realloc size
+		if(i == current_size)
+		{
+            current_size = i+len_max;
+			pStr = realloc(pStr, current_size);
+		}
+	}
+ 
+	pStr[i] = '\0';       
+    }
+    return 0;	
 }
