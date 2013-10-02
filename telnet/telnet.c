@@ -79,6 +79,10 @@ int getInputString(char* pStr){
     {
 	int c = EOF;
 	unsigned int i =0;
+  c = getchar();
+  printf("ok");
+  printf("%i", c == '\n');
+  printf("ok2");
         //accept user input until hit enter or end of file
 	while (( c = getchar() ) != '\n' && c != EOF)
 	{
