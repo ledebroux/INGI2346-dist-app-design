@@ -4,14 +4,14 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8000
-//#define M2_ADDR "130.104.172.88"
-#define M2_ADDR "127.0.0.1"
+#define TELNETD_PORT  7000
+#define M2_ADDR "130.104.172.88"
 
 int getInputString(char*);
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
+<<<<<<< HEAD
   printf("while");
   int sd1;
   struct sockaddr_in     m2;
@@ -57,10 +57,29 @@ main(argc, argv) int    argc; char   *argv[ ];
     // for(i=0; i<=sizeof(a); i++){
     //   printf("%c\n", a[i]);
     // }
+=======
+    int sd1;
+    struct sockaddr_in     m2;
 
-  }
-  // printf("Integer that you have entered is %s\n", a);
+    /* fill in the structure "m2" with the address of the
+     * server that we want to connect with */
+  
+    bzero((char *) &m2       , sizeof(m2));
+    m2.sin_family     = AF_INET;
+    m2.sin_addr.s_addr = inet_addr(M2_ADDR);
+    m2.sin_port       = htons(TELNETD_PORT);
 
+    /* Open a TCP socket (an Internet stream socket)*/
+
+    if ( (sd1 = socket(PF_INET, SOCK_STREAM, 0)) < 0){
+        perror("socket error in telnet");
+        exit(-1);
+    }
+>>>>>>> parent of 52d463b... telnet
+
+    /* Connect to the server */
+
+<<<<<<< HEAD
   // write(sd1, a, sizeof(a));
   // sleep(20);
   // int i;
@@ -103,4 +122,11 @@ int getInputString(char* pStr){
 	pStr[i] = '\0';       
     }
     return 0;	
+=======
+    if (connect(sd1 , (struct sockaddr *) &m2 , sizeof ( m2 )) < 0){
+        perror("connect error in telnet");
+        exit(-1);
+    }
+          printf("ok");
+>>>>>>> parent of 52d463b... telnet
 }
