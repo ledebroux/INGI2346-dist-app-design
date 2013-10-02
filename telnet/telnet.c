@@ -4,15 +4,12 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  7000
-#define M2_ADDR "130.104.172.88"
-
-int getInputString(char*);
+#define TELNETD_PORT  8000
+//#define M2_ADDR "130.104.172.88"
+#define M2_ADDR "127.0.0.1"
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
-<<<<<<< HEAD
-  printf("while");
   int sd1;
   struct sockaddr_in     m2;
 
@@ -37,49 +34,31 @@ main(argc, argv) int    argc; char   *argv[ ];
     perror("connect error in telnet");
     exit(-1);
   }
-  char *dest;
-  printf("while_before");
-  while(strcmp(dest, "close")) {
-    printf("while");
+  printf("ok");
+  char a[10];
+
+  while(strcmp(a, "close")) {
     printf("Enter a command\n");
-	  getInputString(dest);
-    printf("comand %c", dest[0]);
-    if(dest[0]=='l'){
-      printf("Local command: %s\n", dest);
+    gets(a);
+    printf("comand %c", a[0]);
+    if(a[0]=='l'){
+      printf("Local command: %s\n", a);
     }
     else{
-      printf("Distant host must perform: %s\n", dest);
-      write(sd1, dest, sizeof(dest));
+      printf("Distant host must perform: %s\n", a);
+      write(sd1, a, sizeof(a));
     }
     
-    printf("c: %lu", sizeof(dest));
+    printf("c: %lu", sizeof(a));
+    printf("c: %lu", sizeof("close"));
     // int i;
     // for(i=0; i<=sizeof(a); i++){
     //   printf("%c\n", a[i]);
     // }
-=======
-    int sd1;
-    struct sockaddr_in     m2;
 
-    /* fill in the structure "m2" with the address of the
-     * server that we want to connect with */
-  
-    bzero((char *) &m2       , sizeof(m2));
-    m2.sin_family     = AF_INET;
-    m2.sin_addr.s_addr = inet_addr(M2_ADDR);
-    m2.sin_port       = htons(TELNETD_PORT);
+  }
+  // printf("Integer that you have entered is %s\n", a);
 
-    /* Open a TCP socket (an Internet stream socket)*/
-
-    if ( (sd1 = socket(PF_INET, SOCK_STREAM, 0)) < 0){
-        perror("socket error in telnet");
-        exit(-1);
-    }
->>>>>>> parent of 52d463b... telnet
-
-    /* Connect to the server */
-
-<<<<<<< HEAD
   // write(sd1, a, sizeof(a));
   // sleep(20);
   // int i;
@@ -88,45 +67,4 @@ main(argc, argv) int    argc; char   *argv[ ];
   //         printf("%i", i);
   //     }
   // } 
-}
-
-int getInputString(char* pStr){
-  printf("ok1");
-	unsigned int len_max = 128;
-    unsigned int current_size = 0;
- 
-    pStr = malloc(len_max);
-    current_size = len_max;
- 
-    if(pStr != NULL)
-    {
-	int c = EOF;
-	unsigned int i =0;
-  // c = getchar();
-  printf("ok");
-  // printf("%i", c == '\n');
-  printf("ok2");
-        //accept user input until hit enter or end of file
-	while (( c = getchar() ) != EOF)
-	{
-		pStr[i++]=(char)c;
- 
-		//if i reached maximize size then realloc size
-		if(i == current_size)
-		{
-            current_size = i+len_max;
-			pStr = realloc(pStr, current_size);
-		}
-	}
- 
-	pStr[i] = '\0';       
-    }
-    return 0;	
-=======
-    if (connect(sd1 , (struct sockaddr *) &m2 , sizeof ( m2 )) < 0){
-        perror("connect error in telnet");
-        exit(-1);
-    }
-          printf("ok");
->>>>>>> parent of 52d463b... telnet
 }
