@@ -36,8 +36,9 @@ main(argc, argv) int    argc; char   *argv[ ];
     perror("connect error in telnet");
     exit(-1);
   }
-  printf("ok");
+
   char a[256];
+
 
   while(strcmp(a, "bye")) {
     printf("Enter a command\n");
@@ -110,16 +111,4 @@ main(argc, argv) int    argc; char   *argv[ ];
   //         printf("%i", i);
   //     }
   // } 
-}
-
-int shrink(char* chaine, char* output){
-  int i;
-  int j;
-  for(i=0; chaine[i] != '\0'; i++){}
-  i++;
-  output = realloc(output, i*sizeof(char));
-  for(j=0; j<i; j++){
-      output[j] = chaine[j];
-  }
-  return 0;
 }
