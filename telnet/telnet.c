@@ -8,6 +8,8 @@
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
+int shrink(char*, char*);
+
 main(argc, argv) int    argc; char   *argv[ ];
 {
   int sd1;
@@ -53,6 +55,10 @@ main(argc, argv) int    argc; char   *argv[ ];
     // } else {
     //   printf("ooo2 + %i\n", a[1]);
     // }
+
+    // char o[256];
+    // shrink(a, o);
+    // printf("size %lu\n", sizeof(o));
 
     char * tok;
     tok = strtok (a," ");
@@ -108,8 +114,10 @@ int shrink(char* chaine, char* output){
   int i;
   int j;
   for(i=0; chaine[i] != '\0'; i++){}
-  output = realloc(output, i*sizeor(char));
-  for(j=0; j<=i; j++){
+  i++;
+  output = realloc(output, i*sizeof(char));
+  for(j=0; j<i; j++){
       output[j] = chaine[j];
   }
+  return 0;
 }
