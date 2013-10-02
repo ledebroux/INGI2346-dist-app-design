@@ -1,3 +1,5 @@
+compile: telnet.o telnetd.o
+
 telnet.o: telnet.c
 	gcc -o telnet.o telnet.c
 	
