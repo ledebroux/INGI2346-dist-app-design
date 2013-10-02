@@ -35,14 +35,36 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
   printf("ok");
-  char a[10];
+  char a[6];
 
-  while(strcmp(a, "close")) {
+  while(strcmp(a, "bye")) {
     printf("Enter a command\n");
     gets(a);
-    printf("comand %c", a[0]);
+    printf("comand %c\n", a[0]);
+    printf("coman2 %c\n", a[1]);
+    if(a[1]=='\0'){
+      printf("woot\n");
+    } else {
+      printf("ooo + %i\n", a[1]);
+    }
+
+    if(a[2]=='\0'){
+      printf("woot2 + %i\n", a[1]);
+    } else {
+      printf("ooo2 + %i\n", a[1]);
+    }
+
     if(a[0]=='l'){
       printf("Local command: %s\n", a);
+    }
+    else if(strcmp(a, "bye")){
+      printf("bye");
+    }
+    else if(strcmp(a, "get")){
+      printf("get");
+    }
+    else if(strcmp(a, "put")){
+      printf("put");
     }
     else{
       printf("Distant host must perform: %s\n", a);

@@ -4,7 +4,7 @@
 #include <signal.h>
 #define TELNETD_PORT 10023
 
-int sigflag;
+// int sigflag;
 
 main (argc, argv) int argc; char *argv[ ];
 {
@@ -111,7 +111,7 @@ main (argc, argv) int argc; char *argv[ ];
 
 */
 
-int resquiescat(){wait();sigflag = 1;} /*called by SIGCHLD event handler*/
+// int resquiescat(){wait();sigflag = 1;} /*called by SIGCHLD event handler*/
 
 /*
 
