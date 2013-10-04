@@ -46,8 +46,7 @@ main(argc, argv) int    argc; char   *argv[ ];
     fgets(buffer,255,stdin);
 
     /* Transfer from buffer to a char* input with the exact right size */
-    // int i;
-    // for(i=0; buffer[i] != '\0'; i++){}
+
     int i = getStringLength(buffer, 10);
     char str[i];
     printf("leng i = %i\n", i);
@@ -67,10 +66,6 @@ main(argc, argv) int    argc; char   *argv[ ];
     //   if(tok[j] == '\n'){printf("youhou\n");}
     // }
 
-    // printf("command = %s\n", ftok);
-    // printf("size = %lu\n", sizeof(str));
-    // printf("size tok = %lu\n", sizeof(ftok));
-
     if(!strcmp(str, "lpwd")){
       printf("Local command: pwd\n");
     }
@@ -85,18 +80,10 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(!strcmp(tok, "get")){
       printf("get\n");
-      // printf("gettt %s\n", tok);
       write(sd1, tok, sizeof(str));
       tok = strtok (NULL, " ,.-");
       tok_length = getStringLength(tok, '\0');
-      // int j;
-      // for(j=0; j<tok_length; j++){
-      //   printf("tok%i: %i\n", j, tok[j]);
-      //   if(tok[j] == '\0'){printf("youhou\n");}
-      // }
       char temp[tok_length];
-      // printf("leng tok = %i\n", tok_length);
-      // printf("size tok = %lu\n", sizeof(temp));
       fillString(tok, temp, tok_length);
       printf("file %s\n", temp);
       write(sd1, temp, sizeof(temp));
@@ -120,23 +107,17 @@ main(argc, argv) int    argc; char   *argv[ ];
 }
 
 int getStringLength(char* str, char sep){
-  //printf("sep: %i", sep);
   int i=0;
   while(str[i] != sep){
-    // printf("char%i: %i\n", i, str[i]);
     i++;
   }
   i++;
-  //i++;
-  // for(i=0; str[i] != sep; i++){}
   return i;
 }
 
 int fillString(char* data, char* result, int length){
   int j;
-  // printf("length : %i\n", length);
   for(j=0; j<length; j++){
-    // printf("j : %i", j);
     if(j != length-1){
       result[j] = data[j];
     } else {
