@@ -1,3 +1,4 @@
+#include "header.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -102,11 +103,15 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
       printf("pid 0\n");
       close(sdw);
       
-      char a[10];
+      msgHeader in_header;
       
 
-      while(read(sd2, a, sizeof(a))){
-        printf("I received %s\n", a);
+      while(read(sd2, &in_header, sizeof(msgHeader))){
+        if (in_header.type == PWD){ // if msg is of type 1
+          char buffer[in_header.length];
+          read(sd2, buffer, in_header.length);
+          printf("I received %s\n", buffer);
+        } 
       }
           /*child process */
       exit(0);
