@@ -1,3 +1,4 @@
+#include "header.h"
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,6 +12,7 @@
 //int shrink(char*, char*);
 int getStringLength(char*, char);
 int fillString(char*, char*, int);
+int sendMsg(char*, int);
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
@@ -66,34 +68,48 @@ main(argc, argv) int    argc; char   *argv[ ];
     //   if(tok[j] == '\n'){printf("youhou\n");}
     // }
 
-    if(!strcmp(str, "lpwd")){
+    if(!strcmp(ftok, "lpwd")){
       printf("Local command: pwd\n");
     }
-    else if(!strcmp(tok, "lcd")){
+    else if(!strcmp(ftok, "lcd")){
       printf("Local command: cd\n"); 
     }
-    else if(!strcmp(tok, "lls")){
+    else if(!strcmp(ftok, "lls")){
       printf("Local command: ls\n"); 
     }
-    else if(!strcmp(tok, "bye")){
-      printf("bye\n");
+    else if(!strcmp(ftok, "pwd")){
+      printf("Distant command: pwd\n"); 
+      sendMsg(ftok, sd1);
     }
-    else if(!strcmp(tok, "get")){
+    else if(!strcmp(ftok, "cd")){
+      printf("Distant command: cd\n"); 
+      sendMsg(ftok, sd1);
+    }
+    else if(!strcmp(ftok, "ls")){
+      printf("Distant command: ls\n"); 
+      sendMsg(ftok, sd1);
+    }
+    else if(!strcmp(ftok, "bye")){
+      printf("bye\n");
+      sendMsg(ftok, sd1);
+    }
+    else if(!strcmp(ftok, "get")){
       printf("get\n");
-      write(sd1, tok, sizeof(str));
+      sendMsg(ftok, sd1);
       tok = strtok (NULL, " ,.-");
       tok_length = getStringLength(tok, '\0');
       char temp[tok_length];
       fillString(tok, temp, tok_length);
       printf("file %s\n", temp);
-      write(sd1, temp, sizeof(temp));
+      //the first two char are skipped
+      sendMsg(temp, sd1);
     }
-    else if(!strcmp(tok, "put")){
+    else if(!strcmp(ftok, "put")){
       printf("put\n");
+      sendMsg(ftok, sd1);
     }
     else{
-      printf("Distant host must perform: %s\n", str);
-      write(sd1, str, sizeof(str));
+      printf("Not Today");
     }
 
     // while (tok != NULL)
@@ -104,6 +120,11 @@ main(argc, argv) int    argc; char   *argv[ ];
     // }
 
   } 
+}
+
+int sendMsg(char* msg, int s){
+  write(s, msg, sizeof(msg));
+  return 0;
 }
 
 int getStringLength(char* str, char sep){
@@ -123,6 +144,6 @@ int fillString(char* data, char* result, int length){
     } else {
       result[j] = '\0';
     }
-    
   }
+  return 0;
 }
