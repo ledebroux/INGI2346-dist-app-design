@@ -20,7 +20,7 @@ int getLs(char* str, char* path, int s){
   } else {
     printf("null");
   }
-  close(dir);
+  // close(dir);
   return 0;
 }
 
@@ -42,5 +42,5 @@ int getPwd(char* pwd){
 void main (int c, char **args){
   char* str;
   printf("dir: %s", args[1]);
-  getLs(str, args[1]);
+  getLs(str, args[1], 0);
 }
