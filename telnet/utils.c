@@ -1,5 +1,7 @@
 #include <sys/types.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <stdio.h>
 
 int getLs(char* str, char* path){
   DIR *dir;
@@ -13,6 +15,21 @@ int getLs(char* str, char* path){
           printf(dent->d_name);
   }
   close(dir);
+}
+
+int getPwd(char* pwd){
+	char* temp[2014];
+	if (getcwd(temp, sizeof(temp)) != NULL){
+		int size = 0;
+		for(int i=0;temp[i]!= '\0';i++){
+			size++;
+		}
+		pwd = malloc(sizeof(char)*size);
+		for(int i=0;i<=size;i++){
+			pwd[i] = temp[i];
+		}
+	}
+	return 0;      
 }
 
 void main (){
