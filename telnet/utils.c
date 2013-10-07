@@ -1,9 +1,10 @@
+#include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
 
-int getLs(char* str, char* path){
+int getLs(char* str, char* path, int s){
   DIR *dir;
   struct dirent *dent;
   // char buffer[50];
@@ -11,10 +12,17 @@ int getLs(char* str, char* path){
   dir = opendir(path);   //this part
   if(dir!=NULL)
   {
-      while((dent=readdir(dir))!=NULL)
-          printf(dent->d_name);
+    int size
+    while((dent=readdir(dir))!=NULL) {
+      printf ("[%s]\n", dent->d_name);
+    }
+      // printf(dent->d_name);
+    printf("not null");
+  } else {
+    printf("null");
   }
   close(dir);
+  return 0;
 }
 
 int getPwd(char* pwd){
@@ -32,7 +40,8 @@ int getPwd(char* pwd){
 	return 0;      
 }
 
-void main (){
+void main (int c, char **args){
   char* str;
-  get(str, "/home/inekar";)
+  printf("dir: %s", args[1]);
+  getLs(str, args[1]);
 }
