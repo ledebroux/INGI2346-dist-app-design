@@ -10,7 +10,6 @@ int getLs(char* str, char* path, int s){
   dir = opendir(path);   //this part
   if(dir!=NULL)
   {
-    int size
     while((dent=readdir(dir))!=NULL) {
       printf ("[%s]\n", dent->d_name);
     }
