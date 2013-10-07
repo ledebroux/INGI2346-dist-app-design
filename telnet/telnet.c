@@ -1,11 +1,12 @@
 #include "header.h"
+#include "utils.h"
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8010
+#define TELNETD_PORT  8008
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -76,18 +77,34 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(!strcmp(ftok, "lls")){
       printf("Local command: ls\n"); 
+      getLs("/home/inekar/Documents/git/INGI2346-dist-app-design/telnet", -1);
+      char* buffer;
     }
     else if(!strcmp(ftok, "pwd")){
       printf("Distant command: pwd\n"); 
-      sendMsg(ftok, sd1);
+      msgHeader h;
+      h.length = 0;
+      h.type = PWD;
+      sendHeader(&h, sd1);
     }
     else if(!strcmp(ftok, "cd")){
       printf("Distant command: cd\n"); 
       sendMsg(ftok, sd1);
     }
     else if(!strcmp(ftok, "ls")){
-      printf("Distant command: ls\n"); 
-      sendMsg(ftok, sd1);
+      printf("Distant command: ls\n");
+      msgHeader h;
+      h.length = 0;
+      h.type = LS; 
+      sendHeader(&h, sd1);
+      while(read(sd1, buffer, 256)){
+        printf("ls : %s\n", buffer);
+        // printf("size : %lu\n", sizeof(buffer));
+        if(!strcmp(buffer, "end")){
+          printf("end of ls");
+          break;
+        }
+      }
     }
     else if(!strcmp(ftok, "bye")){
       printf("bye\n");
@@ -124,6 +141,11 @@ main(argc, argv) int    argc; char   *argv[ ];
 
 int sendMsg(char* msg, int s){
   write(s, msg, sizeof(msg));
+  return 0;
+}
+
+int sendHeader(msgHeader* h, int s){
+  write(s, h, sizeof(h));
   return 0;
 }
 
