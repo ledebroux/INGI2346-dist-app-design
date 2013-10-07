@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <stdio.h>
 
 int getLs(char* str, char* path, int s){
   DIR *dir;
@@ -20,6 +22,21 @@ int getLs(char* str, char* path, int s){
   }
   close(dir);
   return 0;
+}
+
+int getPwd(char* pwd){
+	char* temp[2014];
+	if (getcwd(temp, sizeof(temp)) != NULL){
+		int size = 0;
+		for(int i=0;temp[i]!= '\0';i++){
+			size++;
+		}
+		pwd = malloc(sizeof(char)*size);
+		for(int i=0;i<=size;i++){
+			pwd[i] = temp[i];
+		}
+	}
+	return 0;      
 }
 
 void main (int c, char **args){
