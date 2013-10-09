@@ -1,8 +1,7 @@
-compile: telnet.o telnetd.o
-	gcc -o compile telnet.o telnetd.o
+TELNET : telnet.o telnetd.o
 
-telnet.o: telnet.c
-	gcc -o telnet.o -c telnet.c
-	
-telnetd.o: telnetd.c
-	gcc -o telnetd.o -c telnetd.c
+telnet.o : telnet.c utils.c
+	gcc utils.c telnet.c -o telnet.o
+
+telnetd.o : telnetd.c utils.c
+	gcc utils.c telnetd.c -o telnet.o

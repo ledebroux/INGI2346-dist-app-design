@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <string.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -29,7 +30,7 @@ int getLs(char* path, int s){
   } else {
     printf("wrong path");
   }
-  // close(dir);
+  closedir(dir);
   return 0;
 }
 
@@ -52,25 +53,21 @@ int cd(char* dir, char** path){
 }
 
 int getPwd(char** pwd){
-	char temp[1024];
+	char temp[1024]; // AJUSTER LA TAILLE CORRECTEMENT
 	if (getcwd(temp, sizeof(temp)) != NULL){
-		int size = 0;
-		int i;
-		for(i=0;temp[i]!= '\0';i++){
-			size++;
-		}
-		pwd[0] = malloc(sizeof(char)*size);
+		 int size = 0;
+		 int i;
+		 for(i=0;temp[i]!= '\0';i++){
+		 	size++;
+		 }
+     char* temp2;
+     temp2 = malloc(size*sizeof(char));
 		for(i=0;i<=size;i++){
-			pwd[0][i] = temp[i];
+		 temp2[i] = temp[i];
 		}
+    *pwd = temp2;
 		return 0; 
 	}
 	return -1;     
 }
 
-// int main (int c, char **args){
-//   char** str;
-//   int i = getPwd(&str);
-//   //printf("current directory : %s",str[0]);
-//   return 0;
-// }

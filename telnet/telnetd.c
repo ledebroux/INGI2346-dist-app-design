@@ -9,6 +9,7 @@
 #include <signal.h>
 #define TELNETD_PORT 8013
 
+
 int sigflag;
 
 main (argc, argv) int argc; char *argv[ ];
@@ -101,21 +102,29 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
     }
 
     else if (childpid == 0){
-      printf("pid 0\n");
       close(sdw);
       
       msgHeader in_header;
       
 
       while(read(sd2, &in_header, sizeof(msgHeader))){
-        printf("Type = %i\n", in_header.type);
-        printf("Length = %i\n", in_header.length);
+        // printf("Type = %i\n", in_header.type);
+        // printf("Length = %i\n", in_header.length);
         if (in_header.type == PWD){ // if msg is of type 1
-          printf("pwd\n");
+          char *curr_dir;
+          int i = getPwd(&curr_dir);
+          printf("%s\n", curr_dir);
+          if(!i){
+            write(sd2, curr_dir, strlen(curr_dir));
+          }
         } 
         else if (in_header.type == LS){
           printf("ls\n");
-          getLs("/home/inekar/Documents/git/INGI2346-dist-app-design/telnet", sd2);
+          char *curr_dir;
+          int i = getPwd(&curr_dir);
+          if(!i){
+            getLs(curr_dir, sd2);
+          }
         } 
         else if (in_header.type == CD){
           printf("cd\n");
@@ -140,7 +149,6 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           printf("I received %s\n", buffer);
           printf("size str = %lu\n", sizeof(buffer));
         }
-        printf("out\n");
       }
           /*child process */
       exit(0);
