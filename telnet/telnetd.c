@@ -1,4 +1,5 @@
 #include "header.h"
+#include "utils.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -6,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#define TELNETD_PORT 8010
+#define TELNETD_PORT 8008
 
 int sigflag;
 
@@ -107,11 +108,21 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
       
 
       while(read(sd2, &in_header, sizeof(msgHeader))){
+        printf("Type = %i\n", in_header.type);
         if (in_header.type == PWD){ // if msg is of type 1
+          printf("pwd\n");
+        } 
+        else if (in_header.type == LS){
+          printf("ls\n");
+          getLs("/home/inekar/Documents/git/INGI2346-dist-app-design/telnet", sd2);
+        } 
+        else {
           char buffer[in_header.length];
           read(sd2, buffer, in_header.length);
           printf("I received %s\n", buffer);
-        } 
+          printf("size str = %lu\n", sizeof(buffer));
+        }
+        printf("out\n");
       }
           /*child process */
       exit(0);

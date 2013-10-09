@@ -1,5 +1,5 @@
 
-int getLs(char* str, char* path);
+int getLs(char* path, int s);
 
 /*
  * getPwd place in pwd the current path 

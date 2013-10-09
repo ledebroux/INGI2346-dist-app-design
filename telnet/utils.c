@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-int getLs(char* str, char* path, int s){
+int getLs(char* path, int s){
   DIR *dir;
   struct dirent *dent;
   // char buffer[50];
@@ -14,16 +14,25 @@ int getLs(char* str, char* path, int s){
   if(dir!=NULL)
   {
     while((dent=readdir(dir))!=NULL) {
-      printf ("[%s]\n", dent->d_name);
+      if(s < 0) {
+        printf ("[%s]\n", dent->d_name);
+      } else {
+        printf ("send[%s]\n", dent->d_name);
+        printf("size: %lu\n", sizeof(dent->d_name));
+        write(s, dent->d_name, sizeof(dent->d_name));
+      }
     }
-      // printf(dent->d_name);
-    printf("not null");
+    if(s >= 0){
+      char* end = "end";
+      write(s, end, sizeof(end));
+    }
   } else {
-    printf("null");
+    printf("wrong path");
   }
   // close(dir);
   return 0;
 }
+
 
 int getPwd(char** pwd){
 	char temp[1024];
