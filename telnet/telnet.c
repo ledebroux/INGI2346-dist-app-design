@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8008
+#define TELNETD_PORT  8013
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -14,6 +14,9 @@
 int getStringLength(char*, char);
 int fillString(char*, char*, int);
 int sendMsg(char*, int);
+int getString(char*, char**, char);
+int cmdcmp(char*, char*);
+int getArg(char*, char*, char**);
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
@@ -48,50 +51,41 @@ main(argc, argv) int    argc; char   *argv[ ];
     printf("Enter a command\n");
     fgets(buffer,255,stdin);
 
-    /* Transfer from buffer to a char* input with the exact right size */
-
-    int i = getStringLength(buffer, 10);
-    char str[i];
-    printf("leng i = %i\n", i);
-    printf("size str = %lu\n", sizeof(str));
-    fillString(buffer, str, i);
-
-    char * tok;
-    tok = strtok (str," ");
-
-    int tok_length = getStringLength(tok, '\0');
-    char ftok[tok_length];
-    fillString(tok, ftok, tok_length);
-
-    // int j;
-    // for(j=0; j<i; j++){
-    //   printf("tok%i: %i\n", j, tok[j]);
-    //   if(tok[j] == '\n'){printf("youhou\n");}
-    // }
-
-    if(!strcmp(ftok, "lpwd")){
+    if(cmdcmp("lpwd", buffer)){
       printf("Local command: pwd\n");
     }
-    else if(!strcmp(ftok, "lcd")){
+    else if(cmdcmp("lcd", buffer)){
       printf("Local command: cd\n"); 
+      char * current = "/home/inekar";
+      cd(buffer, &current);
+      // printf("pathsizeafter: %lu", strlen(current));
+      printf("new path: %s\n", current);
     }
-    else if(!strcmp(ftok, "lls")){
+    else if(cmdcmp("lls", buffer)){
       printf("Local command: ls\n"); 
       getLs("/home/inekar/Documents/git/INGI2346-dist-app-design/telnet", -1);
-      char* buffer;
     }
-    else if(!strcmp(ftok, "pwd")){
+    else if(cmdcmp("pwd", buffer)){
       printf("Distant command: pwd\n"); 
       msgHeader h;
       h.length = 0;
       h.type = PWD;
       sendHeader(&h, sd1);
     }
-    else if(!strcmp(ftok, "cd")){
+    else if(cmdcmp("cd", buffer)){
       printf("Distant command: cd\n"); 
-      sendMsg(ftok, sd1);
+      char* arg;
+      getArg("cd", buffer, &arg);
+
+
+      msgHeader h;
+      h.length = strlen(arg)+1;
+      h.type = CD;
+      sendHeader(&h, sd1);
+      getArg("cd", buffer, &arg);     
+      sendMsg(arg, sd1);
     }
-    else if(!strcmp(ftok, "ls")){
+    else if(cmdcmp("ls", buffer)){
       printf("Distant command: ls\n");
       msgHeader h;
       h.length = 0;
@@ -101,71 +95,148 @@ main(argc, argv) int    argc; char   *argv[ ];
         printf("ls : %s\n", buffer);
         // printf("size : %lu\n", sizeof(buffer));
         if(!strcmp(buffer, "end")){
-          printf("end of ls");
+          printf("end of ls\n");
           break;
         }
       }
     }
-    else if(!strcmp(ftok, "bye")){
+    else if(cmdcmp("bye", buffer)){
       printf("bye\n");
-      sendMsg(ftok, sd1);
+      // sendMsg(ftok, sd1);
     }
-    else if(!strcmp(ftok, "get")){
+    else if(cmdcmp("get", buffer)){
       printf("get\n");
-      sendMsg(ftok, sd1);
-      tok = strtok (NULL, " ,.-");
-      tok_length = getStringLength(tok, '\0');
-      char temp[tok_length];
-      fillString(tok, temp, tok_length);
-      printf("file %s\n", temp);
-      //the first two char are skipped
-      sendMsg(temp, sd1);
+      // sendMsg(ftok, sd1);
+      // tok = strtok (NULL, " ,.-");
+      // tok_length = getStringLength(tok, '\0');
+      // char temp[tok_length];
+      // fillString(tok, temp, tok_length);
+      // printf("file %s\n", temp);
+      // //the first two char are skipped
+      // sendMsg(temp, sd1);
     }
-    else if(!strcmp(ftok, "put")){
+    else if(cmdcmp("put", buffer)){
       printf("put\n");
-      sendMsg(ftok, sd1);
+      // sendMsg(ftok, sd1);
     }
     else{
-      printf("Not Today");
+      printf("Not Today\n");
     }
-
-    // while (tok != NULL)
-    // {
-    //   printf("toksize: %lu", sizeof(tok));
-    //   printf ("%s\n",tok);
-    //   tok = strtok (NULL, " ,.-");
-    // }
-
+   
   } 
 }
 
 int sendMsg(char* msg, int s){
-  write(s, msg, sizeof(msg));
+
+  int ja;
+  for(ja=0; ja<strlen(msg); ja++){
+    printf("tok%i: %i\n", ja, msg[ja]);
+  }
+  printf("getstr: %s\n", msg);
+
+  printf("msg: %s\n", msg);
+  printf("msg len = %lu\n", strlen(msg));
+  write(s, msg, strlen(msg)+1);
   return 0;
 }
 
 int sendHeader(msgHeader* h, int s){
+  printf("Header sent\n");
   write(s, h, sizeof(h));
   return 0;
 }
 
+int getString(char* data, char** result, char sep){
+  // int ja;
+  // for(ja=0; ja<strlen(data); ja++){
+  //   printf("tok%i: %i\n", ja, data[ja]);
+  // }
+  printf("data: %s\n", data);
+  // int ja;
+  // for(ja=0; ja<strlen(data); ja++){
+  //   printf("tok%i: %i\n", ja, data[ja]);
+  // }
+  // printf("getstr: %s\n", data);
+  int i = getStringLength(data, sep);
+  printf("len: %i\n", i);
+  // printf("getstrlen: %i\n", i);
+  char str[i+1];
+  int j;
+  for(j=0; j<i+1; j++){
+    if(j == i){
+      str[j] = 0;
+    } 
+    else {
+      str[j] = data[j]; 
+    }
+    // str[j] = data[j];
+    // printf("datachar: %i\n", data[j]);
+  }
+  printf("getstr: %s\n", str);
+  *result = str;
+  return 0;
+}
+
 int getStringLength(char* str, char sep){
+  int ja;
+  for(ja=0; ja<strlen(str); ja++){
+    printf("tok%i: %i\n", ja, str[ja]);
+  }
+  printf("getstr: %s\n", str);
+
   int i=0;
   while(str[i] != sep){
     i++;
   }
-  i++;
+  // i++;
   return i;
 }
 
-int fillString(char* data, char* result, int length){
-  int j;
-  for(j=0; j<length; j++){
-    if(j != length-1){
-      result[j] = data[j];
-    } else {
-      result[j] = '\0';
+// int fillString(char* data, char* result, int length){
+//   int j;
+//   for(j=0; j<length; j++){
+//     if(j != length-1){
+//       result[j] = data[j];
+//     } 
+//     else {
+//       result[j] = '\0';
+//     }
+//   }
+//   return 0;
+// }
+
+int cmdcmp(char* cmd, char* str){
+  int i;
+  for(i=0; i<strlen(cmd); i++){
+    if(cmd[i]!=str[i]){
+      return 0;
     }
   }
+  if(cmd[i]!=0 && cmd[i]!=32 && cmd[i]!=10){
+    return 0;
+  }
+  return 1;
+}
+
+int getArg(char* cmd, char* str, char** arg_result){
+  int len = strlen(cmd);
+  int i=len;
+  while(str[i]==32){
+    i++;
+  }
+  char temp[strlen(str)];
+  int j;
+  for(j=0; j<strlen(str); j++){
+    if(str[j+i]!=0 && str[j+i]!=32 && str[j+i]!=10){
+      temp[j] = str[j+i];
+    } else {
+      break;
+    }
+  }
+  temp[j]=0;
+  printf("temp: %s\n", temp);
+  *arg_result = temp;
+  // printf("targ: %s\n", *arg);
+
   return 0;
 }

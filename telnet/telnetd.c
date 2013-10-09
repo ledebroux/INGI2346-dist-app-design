@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#define TELNETD_PORT 8008
+#define TELNETD_PORT 8013
 
 int sigflag;
 
@@ -109,6 +109,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
 
       while(read(sd2, &in_header, sizeof(msgHeader))){
         printf("Type = %i\n", in_header.type);
+        printf("Length = %i\n", in_header.length);
         if (in_header.type == PWD){ // if msg is of type 1
           printf("pwd\n");
         } 
@@ -116,6 +117,23 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           printf("ls\n");
           getLs("/home/inekar/Documents/git/INGI2346-dist-app-design/telnet", sd2);
         } 
+        else if (in_header.type == CD){
+          printf("cd\n");
+          char buffer[in_header.length];
+          // printf("h_len = %i\n", in_header.length);
+          // printf("buf = %lu\n", strlen(buffer));
+          // printf("bufsize = %lu\n", sizeof(buffer));
+          read(sd2, buffer, in_header.length);
+          // printf("buffer: %s of size %i\n", buffer, in_header.length);
+          // int j;
+          // for(j=0; j<strlen(buffer); j++){
+          //   printf("tok%i: %i\n", j, buffer[j]);
+          //   // if(tok[j] == '\n'){printf("youhou\n");}
+          // }
+          char * current = "/home/inekar";
+          cd(buffer, &current);
+          printf("new path: %s\n", current);
+        }
         else {
           char buffer[in_header.length];
           read(sd2, buffer, in_header.length);
