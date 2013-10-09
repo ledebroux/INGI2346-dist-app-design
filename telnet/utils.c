@@ -29,7 +29,7 @@ int getLs(char* path, int s){
   } else {
     printf("wrong path");
   }
-  // close(dir);
+  closedir(dir);
   return 0;
 }
 
