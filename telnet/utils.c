@@ -35,7 +35,7 @@ int getLs(char* path, int s){
 
 
 int getPwd(char** pwd){
-	char temp[1024];
+	char temp[1024]; // AJUSTER LA TAILLE CORRECTEMENT
 	if (getcwd(temp, sizeof(temp)) != NULL){
 		 int size = 0;
 		 int i;
@@ -47,15 +47,8 @@ int getPwd(char** pwd){
 		for(i=0;i<=size;i++){
 		 temp2[i] = temp[i];
 		}
-    *pwd = temp;
+    *pwd = temp2;
 		return 0; 
 	}
 	return -1;     
 }
-
-// int main (int c, char **args){
-//   char *str;
-//   int i = getPwd(&str);
-//   printf("current directory : %s",str);
-//   return 0;
-// }

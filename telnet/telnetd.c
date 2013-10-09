@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#define TELNETD_PORT 8003
+#define TELNETD_PORT 8010
 
 int sigflag;
 
@@ -107,13 +107,11 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
       
 
       while(read(sd2, &in_header, sizeof(msgHeader))){
-        printf("Type = %i\n", in_header.type);
         if (in_header.type == PWD){ // if msg is of type 1
           char *curr_dir;
           int i = getPwd(&curr_dir);
-          printf("%s", curr_dir);
+          printf("%s\n", curr_dir);
           if(!i){
-            printf("%lu", strlen(curr_dir));
             write(sd2, curr_dir, strlen(curr_dir));
           }
         } 

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8003
+#define TELNETD_PORT  8010
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -74,7 +74,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       char *curr_dir;
       int i = getPwd(&curr_dir);
       if(!i){
-        printf("%s", curr_dir);
+        printf("%s\n", curr_dir);
       }
     }
     else if(!strcmp(ftok, "lcd")){
