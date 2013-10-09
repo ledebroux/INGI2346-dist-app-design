@@ -53,9 +53,9 @@ int getPwd(char** pwd){
 	return -1;     
 }
 
-int main (int c, char **args){
-  char *str;
-  int i = getPwd(&str);
-  printf("current directory : %s",str);
-  return 0;
-}
+// int main (int c, char **args){
+//   char *str;
+//   int i = getPwd(&str);
+//   printf("current directory : %s",str);
+//   return 0;
+// }

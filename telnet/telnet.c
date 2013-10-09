@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8008
+#define TELNETD_PORT  8003
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -42,7 +42,7 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
 
-  char buffer[255];
+  char buffer[256];
 
   while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
@@ -71,6 +71,11 @@ main(argc, argv) int    argc; char   *argv[ ];
 
     if(!strcmp(ftok, "lpwd")){
       printf("Local command: pwd\n");
+      char *curr_dir;
+      int i = getPwd(&curr_dir);
+      if(!i){
+        printf("%s", curr_dir);
+      }
     }
     else if(!strcmp(ftok, "lcd")){
       printf("Local command: cd\n"); 
@@ -86,6 +91,9 @@ main(argc, argv) int    argc; char   *argv[ ];
       h.length = 0;
       h.type = PWD;
       sendHeader(&h, sd1);
+      if(read(sd1, buffer, 256)){
+        printf("%s\n", buffer);
+      }
     }
     else if(!strcmp(ftok, "cd")){
       printf("Distant command: cd\n"); 
