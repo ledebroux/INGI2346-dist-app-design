@@ -6,11 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-<<<<<<< HEAD
 #define TELNETD_PORT  8013
-=======
-#define TELNETD_PORT  8010
->>>>>>> c6d3fd9e70c5968b42a6072165d4b0f385bcae59
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
