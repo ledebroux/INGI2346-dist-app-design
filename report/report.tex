@@ -1,0 +1,72 @@
+\documentclass{article}
+
+\input{header.tex}
+\newcommand{\phasor}[2] {
+  #1\phase{#2\degree}
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        {\huge LINGI2346 - Distributed application design}\\
+        \vspace{0.4cm}
+        
+        {\Large {Professeur : Marc Lobelle}}\\
+        \vspace{0.6cm}
+        
+        {\Large \textit{Mission 2 - Usage avancé des sockets}{\Large translate and see header.tex}}\\
+        \vspace{1.2cm}
+
+        \texttt{}\\
+        \vspace{0.2cm}
+
+        \includegraphics[height=10cm]{pageGarde.png}\\
+        \vspace{0.1cm}
+        {\Large \textbf{Universit\'e Catholique de Louvain}}
+        \vspace{0.7cm}
+
+        \vspace{2cm}
+        
+        Léonard Debroux\\
+        Thibaut Knop\\
+        \vspace{0.2cm}
+        2013-2014\\
+    \end{center}
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TITRE ET TABLE DES MATIERES%%%%%%%%%%%%%%%%%%
+%\maketitle
+%\tableofcontents
+%\addcontentsline{toc}{section}{ }
+\newpage
+
+%Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
+
+\section{Architecture}
+In this section, we'll discuss about the different choice that we made regarding the implementation of a transfert protocol.
+
+\subsection{Protocol choice}
+We chose to use TCP and not UDP for several reasons:
+\begin{itemize}
+  \item The transmission errors and reordering are managed by TCP
+  \item A stream oriented connection better suits the transmission of files.
+\end{itemize}
+In the implementation, the choice is made upon the socket creation.
+
+\subsection{TRAN: Mode de fonctionnement du server}
+The mode that seemed to be the better is the concurrent mode. \\
+We chose this option to allow several client to connect to the server and use the transfert protocol.\\
+The server thus behaves as telnet and forks upon receiving a connection attempt.
+
+\subsection{How to execute commands server-side}
+In order to send the command and be able to tackle the problem of having to deal with unknown length, we chose to create a header that is sent each time a command is sent.\\
+The header is a small strcture that contains the type of command and the length of the argument. If the command does not need an argument, that length is set to $0$.\\
+
+When a command is enter client-side, the command is parsed to identify which one it is, and then, a header is sent accordingly.\\
+If the command is supposed to be followed by an argument, the argument is retrieved and sent to the server.\\
+
+Server-side, upon the reception of a header, depending on the type of command, either it is executed and the result is sent back, or the server waits to receive an argument, and then, upon reception, executes the command.
+
+\end{document}
+

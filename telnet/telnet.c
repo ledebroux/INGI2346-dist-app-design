@@ -47,6 +47,12 @@ main(argc, argv) int    argc; char   *argv[ ];
 
   char buffer[256];
 
+  /*
+  TODO: 
+  - if no arg is given when one is needed, do not send the header and throw and error.
+  - if an arg is given when none is needed, do not send the header.
+  */
+
   while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
     fgets(buffer,255,stdin);
@@ -85,7 +91,6 @@ main(argc, argv) int    argc; char   *argv[ ];
       char* arg;
       getArg("cd", buffer, &arg);
 
-
       msgHeader h;
       h.length = strlen(arg)+1;
       h.type = CD;
@@ -100,12 +105,11 @@ main(argc, argv) int    argc; char   *argv[ ];
       h.type = LS; 
       sendHeader(&h, sd1);
       while(read(sd1, buffer, 256)){
-        printf("ls : %s\n", buffer);
-        // printf("size : %lu\n", sizeof(buffer));
         if(!strcmp(buffer, "end")){
           printf("end of ls\n");
           break;
         }
+        printf("ls : %s\n", buffer);
       }
     }
     else if(cmdcmp("bye", buffer)){
@@ -113,19 +117,34 @@ main(argc, argv) int    argc; char   *argv[ ];
       // sendMsg(ftok, sd1);
     }
     else if(cmdcmp("get", buffer)){
-      printf("get\n");
-      // sendMsg(ftok, sd1);
-      // tok = strtok (NULL, " ,.-");
-      // tok_length = getStringLength(tok, '\0');
-      // char temp[tok_length];
-      // fillString(tok, temp, tok_length);
-      // printf("file %s\n", temp);
-      // //the first two char are skipped
-      // sendMsg(temp, sd1);
+      printf("Distant command: get\n"); 
+      char* arg;
+      getArg("get", buffer, &arg);
+
+      msgHeader h;
+      h.length = strlen(arg)+1;
+      h.type = GET;
+      sendHeader(&h, sd1);
+      getArg("get", buffer, &arg);     
+      sendMsg(arg, sd1);
+      /*
+      Implement receiving the message
+      */
     }
     else if(cmdcmp("put", buffer)){
-      printf("put\n");
-      // sendMsg(ftok, sd1);
+      printf("Distant command: put\n"); 
+      char* arg;
+      getArg("put", buffer, &arg);
+
+      msgHeader h;
+      h.length = strlen(arg)+1;
+      h.type = PUT;
+      sendHeader(&h, sd1);
+      getArg("put", buffer, &arg);     
+      sendMsg(arg, sd1);
+      /*
+      Implement sending the file
+      */
     }
     else{
       printf("Not Today\n");
