@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8013
+#define TELNETD_PORT  8010
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -53,6 +53,10 @@ main(argc, argv) int    argc; char   *argv[ ];
   - if an arg is given when none is needed, do not send the header.
   */
 
+  /*
+    TODO : fgets(buffer, 255, stdin) -> il faudrait plus que 255
+  */
+
   while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
     fgets(buffer,255,stdin);
@@ -67,10 +71,13 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(cmdcmp("lcd", buffer)){
       printf("Local command: cd\n"); 
-      char * current = "/home/inekar";
-      cd(buffer, &current);
-      // printf("pathsizeafter: %lu", strlen(current));
-      printf("new path: %s\n", current);
+      char * current;
+      int i = getPwd(&current);
+      int j = cd(strtok(buffer,"lcd "), &current);
+      if (j!=0){
+        fprintf(stderr, "Error : %s\n",strerror(j));
+      }
+
     }
     else if(cmdcmp("lls", buffer)){
       printf("Local command: ls\n"); 
@@ -82,7 +89,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       h.length = 0;
       h.type = PWD;
       sendHeader(&h, sd1);
-      if(read(sd1, buffer, 256)){
+      if(read(sd1, buffer, 4096)){
         printf("%s\n", buffer);
       }
     }
@@ -97,6 +104,9 @@ main(argc, argv) int    argc; char   *argv[ ];
       sendHeader(&h, sd1);
       getArg("cd", buffer, &arg);     
       sendMsg(arg, sd1);
+      if(read(sd1, buffer, 4096)){
+        printf("%s\n", buffer);
+      }
     }
     else if(cmdcmp("ls", buffer)){
       printf("Distant command: ls\n");
@@ -156,13 +166,13 @@ main(argc, argv) int    argc; char   *argv[ ];
 int sendMsg(char* msg, int s){
 
   int ja;
-  for(ja=0; ja<strlen(msg); ja++){
-    printf("tok%i: %i\n", ja, msg[ja]);
-  }
-  printf("getstr: %s\n", msg);
+  // for(ja=0; ja<strlen(msg); ja++){
+  //   printf("tok%i: %i\n", ja, msg[ja]);
+  // }
+  // printf("getstr: %s\n", msg);
 
-  printf("msg: %s\n", msg);
-  printf("msg len = %lu\n", strlen(msg));
+  // printf("msg: %s\n", msg);
+  // printf("msg len = %lu\n", strlen(msg));
   write(s, msg, strlen(msg)+1);
   return 0;
 }
@@ -261,7 +271,7 @@ int getArg(char* cmd, char* str, char** arg_result){
     }
   }
   temp[j]=0;
-  printf("temp: %s\n", temp);
+  //printf("temp: %s\n", temp);
   *arg_result = temp;
   // printf("targ: %s\n", *arg);
 

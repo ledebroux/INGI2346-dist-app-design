@@ -5,6 +5,25 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+
+
+char *replace_str(char *str, char *orig, char *rep)
+{
+  static char buffer[4096];
+  char *p;
+
+  if(!(p = strstr(str, orig)))  // Is 'orig' even in 'str'?
+    return str;
+
+  strncpy(buffer, str, p-str); // Copy characters from 'str' start to 'orig' st$
+  buffer[p-str] = '\0';
+
+  sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
+
+  return buffer;
+}
+
 
 int getLs(char* path, int s){
   DIR *dir;
@@ -34,26 +53,24 @@ int getLs(char* path, int s){
   return 0;
 }
 
+
+/*
+  Rajouter fonctionnalité pour chemon absolu + cd ..
+*/
 int cd(char* dir, char** path){
-  printf("dir : %s\n", dir);
-  printf("path: %s\n", *path);
-  printf("dirl : %lu\n", strlen(dir));
-  printf("pathl: %lu\n", strlen(*path));
-  // int len = strlen(*path) + strlen(dir) + 1;
-  char str[1024];
+  char str[strlen(dir) + strlen(*path) + 1];
   strcpy(str, *path);
   strcat(str, "/");
   strcat(str, dir);
-  printf("str : %s\n", str);
-  // *path = malloc(strlen(str)*sizeof(char));
-  // printf("pathsizeb4: %lu", strlen(*path));
   *path = str;
-  // printf("pathsize: %lu", strlen(*path));
-  printf("path : %s\n", *path);
+  *path = replace_str(*path,"\n", ""); //Delete the /n at the end of the path
+  errno = 0;
+  int i = chdir(*path);
+  return errno;
 }
 
 int getPwd(char** pwd){
-	char temp[1024]; // AJUSTER LA TAILLE CORRECTEMENT
+	char temp[4096]; 
 	if (getcwd(temp, sizeof(temp)) != NULL){
 		 int size = 0;
 		 int i;
@@ -70,4 +87,5 @@ int getPwd(char** pwd){
 	}
 	return -1;     
 }
+
 
