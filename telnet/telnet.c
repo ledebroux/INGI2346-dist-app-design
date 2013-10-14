@@ -13,10 +13,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
- #include <errno.h>
+#include <errno.h>
+
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
-
 
 
 int getStringLength(char*, char);
@@ -78,6 +78,8 @@ main(argc, argv) int    argc; char   *argv[ ];
       int i = getPwd(&curr_dir);
       if(!i){
         printf("%s\n", curr_dir);
+      } else {
+        fprintf(stderr, "Error : %s\n",strerror(i));
       }
     }
 
@@ -110,7 +112,14 @@ main(argc, argv) int    argc; char   *argv[ ];
       // printf("Local command: ls\n"); 
       char *current;
       int i = getPwd(&current);
-      getLs(current, -1);
+      if (i==0){
+        int j = getLs(current, -1);
+        if(j!=0){
+          fprintf(stderr, "Error : %s\n",strerror(j));
+        }
+      } else {
+        fprintf(stderr, "Error : %s\n",strerror(i));
+      }
     }
 
     /*
@@ -125,8 +134,12 @@ main(argc, argv) int    argc; char   *argv[ ];
       sendType(sd1, PWD, 0);
       if(read(sd1, &in_header, sizeof(msgHeader))){
         int len = ntohl(in_header.length);
-        read(sd1, buffer, len);
-        printf("%s\n", buffer);
+        if(ntohl(in_header.type) == GET_SIZE){
+          read(sd1, buffer, len);
+          printf("%s\n", buffer);
+        }else{
+          fprintf(stderr, "Error : %s\n",strerror(len));
+        }
       }
     }
 
@@ -163,11 +176,14 @@ main(argc, argv) int    argc; char   *argv[ ];
      */
     else if(cmdcmp("ls", buffer)){
       // printf("Distant command: ls\n");
-
       sendType(sd1, LS, 0);
       while(read(sd1, buffer, 256)){
         if(!strcmp(buffer, "end")){
-          printf("end of ls\n");
+          // printf("end of ls\n");
+          read(sd1, &in_header, sizeof(msgHeader));
+          if(ntohl(in_header.type) == ERRNO_RET && ntohl(in_header.length) != 0){
+            fprintf(stderr, "Error : %s\n",strerror(ntohl(in_header.length)));
+          }
           break;
         }
         printf("%s\n", buffer);
@@ -239,7 +255,7 @@ main(argc, argv) int    argc; char   *argv[ ];
             msgHeader end_header;
             read(sd1, &end_header, sizeof(end_header));
 
-            if(end_header.type == GET_LAST){
+            if(ntohl(end_header.type) == GET_LAST){
               int elen = ntohl(end_header.length);
               if(elen != 0){
                 char last[elen];

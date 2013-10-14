@@ -16,6 +16,8 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+
+
 int sigflag;
 
 void resquiescat(){
@@ -139,6 +141,11 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             int j = sendType(sd2, GET_SIZE, strlen(curr_dir)+1);
             if(j==0){
               write(sd2, curr_dir, strlen(curr_dir)+1);
+            }
+          }else{
+            int z = sendType(sd2, ERRNO_RET, i);
+            if (z!=0){
+              fprintf(stderr, "Error : %s\n",strerror(z));
             }
           }
         } 
@@ -292,7 +299,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               msgHeader end_header;
               read(sd2, &end_header, sizeof(end_header));
 
-              if(end_header.type == GET_LAST){
+              if(ntohl(end_header.type) == GET_LAST){
                 int elen = ntohl(end_header.length);
                 if(elen != 0){
                   char last[elen];

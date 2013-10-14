@@ -23,7 +23,7 @@ Types are defined as follows
 #define GET_SIZE 70
 #define GET_LAST 71
 #define ERRNO_RET 10
-#define TELNETD_PORT 8011
+#define TELNETD_PORT 8010
 #define PACKET_SIZE 1024
 
 struct msgHeader{
