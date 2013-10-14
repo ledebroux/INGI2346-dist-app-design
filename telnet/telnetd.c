@@ -150,25 +150,53 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           char buffer[in_header.length];
           read(sd2, buffer, in_header.length);
 
-          printf("buffer: %s\n", buffer);
+          printf("file: %s\n", buffer);
 
-          FILE* dum = NULL;
-          dum = fopen("dummy", "r");
-          if(dum != NULL){
-            printf("dummy open\n");
-            close(dum);
-          } else {
-            printf("dummy error\n");
+          char *curr_dir;
+          int i = getPwd(&curr_dir);
+          if(!i){
+            char str[strlen(curr_dir) + strlen(buffer) + 1];
+            strcpy(str, curr_dir);
+            strcat(str, "/");
+            strcat(str, buffer);
+            FILE* f = NULL;
+            f = fopen(str, "rb");
+            if(f != NULL){
+              printf("%s open\n", str);
+
+              fseek(f, 0, SEEK_END);
+              int size = ftell(f);
+              rewind(f);
+
+              printf("file len: %i", size);
+
+
+              unsigned char part[512];
+              int n = fread(part, 512, 1, f);
+              //printf("part: %s", part);
+              close(str);
+            } else {
+              printf("%s error\n", buffer);
+            }
           }
 
-          FILE* dum2 = NULL;
-          dum = fopen("dummy2", "r");
-          if(dum2 != NULL){
-            printf("dummy2 open\n");
-            close(dum2);
-          } else {
-            printf("dummy2 error\n");
-          }
+          // FILE* dum = NULL;
+          // dum = fopen("dummy", "r");
+          // if(dum != NULL){
+          //   printf("dummy open\n");
+          //   close(dum);
+          // } else {
+          //   printf("dummy error\n");
+          // }
+
+          // FILE* dum2 = NULL;
+          // dum = fopen("dummy2", "r");
+          // if(dum2 != NULL){
+          //   printf("dummy2 open\n");
+          //   close(dum2);
+          // } else {
+          //   printf("dummy2 error\n");
+          // }
           /*
           TODO
           Implement sending the file

@@ -148,7 +148,16 @@ main(argc, argv) int    argc; char   *argv[ ];
       sendHeader(&h, sd1);
       //getArg("get", buffer, &arg);     
       sendMsg(arg, sd1);
+      FILE* f = NULL;
+      f = fopen(arg, "ab");
+
+      msgHeader in_header;
+      //read(sd1, &in_header, sizeof(msgHeader));
+
+
+      close(arg);
       free(arg);
+
       /*
       Implement receiving the message
       */

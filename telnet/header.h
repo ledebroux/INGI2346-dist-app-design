@@ -12,6 +12,8 @@ Types are defined as follows
 #define GET 7
 #define PUT 8
 #define BYE 9
+#define GET_SIZE 70
+#define GET_LAST 71
 #define TELNETD_PORT 8010
 
 struct msgHeader{

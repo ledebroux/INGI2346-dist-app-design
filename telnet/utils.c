@@ -25,6 +25,7 @@ char *replace_str(char *str, char *orig, char *rep)
 }
 
 
+
 int getLs(char* path, int s){
   DIR *dir;
   struct dirent *dent;
