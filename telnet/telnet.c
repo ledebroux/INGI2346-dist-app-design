@@ -15,7 +15,6 @@ int fillString(char*, char*, int);
 int sendMsg(char*, int);
 int getString(char*, char**, char);
 int cmdcmp(char*, char*);
-int getArg(char*, char*, char**);
 
 main(argc, argv) int    argc; char   *argv[ ];
 {
@@ -76,6 +75,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       getArg("lcd", buffer, &arg);
       // int j = cd(strtok(buffer,"lcd "), &current);
       int j = cd(arg, &current);
+      free(arg);
       if (j!=0){
         fprintf(stderr, "Error : %s\n",strerror(j));
       }
@@ -112,6 +112,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       if(read(sd1, buffer, 6)){
         printf("%s\n", buffer);
       }
+      free(arg);
     }
     else if(cmdcmp("ls", buffer)){
       printf("Distant command: ls\n");
@@ -145,8 +146,9 @@ main(argc, argv) int    argc; char   *argv[ ];
       h.length = strlen(arg)+1;
       h.type = GET;
       sendHeader(&h, sd1);
-      getArg("get", buffer, &arg);     
+      //getArg("get", buffer, &arg);     
       sendMsg(arg, sd1);
+      free(arg);
       /*
       Implement receiving the message
       */
@@ -160,8 +162,9 @@ main(argc, argv) int    argc; char   *argv[ ];
       h.length = strlen(arg)+1;
       h.type = PUT;
       sendHeader(&h, sd1);
-      getArg("put", buffer, &arg);     
+      //getArg("put", buffer, &arg);   
       sendMsg(arg, sd1);
+      free(arg);
       /*
       Implement sending the file
       */

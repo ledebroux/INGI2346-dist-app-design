@@ -149,6 +149,26 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           printf("get\n");
           char buffer[in_header.length];
           read(sd2, buffer, in_header.length);
+
+          printf("buffer: %s\n", buffer);
+
+          FILE* dum = NULL;
+          dum = fopen("dummy", "r");
+          if(dum != NULL){
+            printf("dummy open\n");
+            close(dum);
+          } else {
+            printf("dummy error\n");
+          }
+
+          FILE* dum2 = NULL;
+          dum = fopen("dummy2", "r");
+          if(dum2 != NULL){
+            printf("dummy2 open\n");
+            close(dum2);
+          } else {
+            printf("dummy2 error\n");
+          }
           /*
           TODO
           Implement sending the file
@@ -157,6 +177,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
         }
         else if (in_header.type == PUT){
           printf("put\n");
+
           /*
           TODO
           Implement put, receive file and save it

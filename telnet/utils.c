@@ -103,8 +103,8 @@ int getArg(char* cmd, char* str, char** arg_result){
     }
   }
   temp[j]=0;
-  //printf("temp: %s\n", temp);
-  strcpy(*arg_result, temp);
+  *arg_result = malloc(strlen(temp)+1);
+  strcpy(*arg_result, temp); // <-- causes core dumped
   //*arg_result = temp;
   // printf("targ: %s\n", *arg);
 
