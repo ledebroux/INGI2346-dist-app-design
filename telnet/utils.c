@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 
 
@@ -106,8 +107,8 @@ int sendHeader(msgHeader* h, int s){
  */
 int sendType(int s, int type, int length) {
   msgHeader h;
-  h.length = length;
-  h.type = type;
+  h.length = htonl(length);
+  h.type = htonl(type);
   int result = sendHeader(&h, s);
   return result;
 }
@@ -136,10 +137,10 @@ int getLs(char* path, int s){
   dir = opendir(path);
   if(dir!=NULL)
   {
-    int temp;
+    int temp = 0;
     while((dent=readdir(dir))!=NULL) {
       if(s < 0) {
-        printf ("[%s]\n", dent->d_name);
+        printf ("%s\n", dent->d_name);
       } else {
         printf ("send[%s]\n", dent->d_name);
         errno = 0;
@@ -153,7 +154,7 @@ int getLs(char* path, int s){
     if(s >= 0){
       char* end = "end";
       errno = 0;
-      write(s, end, sizeof(end));
+      write(s, end, 256);
       errno = temp;
       sendType(s, ERRNO_RET, errno);
     }

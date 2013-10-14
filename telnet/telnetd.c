@@ -13,7 +13,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <arpa/inet.h>
 #include <errno.h>
+
 
 
 int sigflag;
@@ -124,13 +126,14 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
        */
       printf("Waiting for command\n");
       while(read(sd2, &in_header, sizeof(msgHeader))){
-
+        int type = ntohl(in_header.type);
+        int len = ntohl(in_header.length);
         /*
          * pwd: print working directory
          * Computed by the method getPwd
          * The result is sent back to the client
          */
-        if (in_header.type == PWD){
+        if (type == PWD){
           char *curr_dir;
           int i = getPwd(&curr_dir);
           printf("%s\n", curr_dir);
@@ -152,7 +155,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
          * the result of the ls command is computed by getLs
          * the result is sent to the client in the function call
          */
-        else if (in_header.type == LS){
+        else if (type == LS){
           printf("ls\n");
           char *curr_dir;
           int i = getPwd(&curr_dir);
@@ -167,14 +170,15 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
          * the path is given in the packet that is read below
          * the current directoryis then changed
          */
-        else if (in_header.type == CD){
+        else if (type == CD){
           printf("cd\n");
-          char buffer[in_header.length];
+          char buffer[len];
 
-          read(sd2, buffer, in_header.length);
+          read(sd2, buffer, len);
 
           char * current;
           int i = getPwd(&current);
+
           int j = cd(buffer, &current);
           if(j == 0){
             write(sd2, "ok!", strlen("ok!")+1);
@@ -190,16 +194,16 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
          * the server then sends the number of packet of PACKET_SIZE size
          * it will send to the client.
          * then, the file is splitted and sent
-         * before sending the last packet,  header is sent to inform 
+         * before sending the last packet, a header is sent to inform 
          * the client of the length of the last packet
          * and the last packet is sent.
          */
-        else if (in_header.type == GET){
+        else if (type == GET){
           printf("get\n");
-          char buffer[in_header.length];
-          read(sd2, buffer, in_header.length);
+          char buffer[len];
+          read(sd2, buffer, len);
 
-          printf("file: %s\n", buffer);
+          // printf("file: %s\n", buffer);
 
           char *curr_dir;
           int i = getPwd(&curr_dir);
@@ -209,21 +213,23 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             strcat(str, "/");
             strcat(str, buffer);
             FILE* f = NULL;
+            errno = 0;
             f = fopen(str, "rb");
             if(f != NULL){
               fseek(f, 0, SEEK_END);
               int size = ftell(f);
               rewind(f);
               int nb_packets = size/PACKET_SIZE;
+              // printf("packets %i\n", nb_packets);
               sendType(sd2, GET_SIZE, nb_packets);
               int j;
               for(j = 0; j<nb_packets; j++){
                 unsigned char part[PACKET_SIZE];
                 int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
                 write(sd2, part, PACKET_SIZE);
-                if(j%1==0){
-                  printf("%i/%i\n", j, nb_packets);
-                }
+                // if(j%100==0){
+                //   printf("%i/%i\n", j, nb_packets);
+                // }
               }
               int last_size = size-nb_packets*PACKET_SIZE;
               sendType(sd2, GET_LAST, last_size);
@@ -235,9 +241,11 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
                 write(sd2, part, last_size);
               } 
               fclose(f);
-            } 
+              printf("File sent: %s\n", buffer);
+            } else {
+              sendType(sd2, ERRNO_RET, errno);
+            }
           }
-          printf("File sent: %s\n", buffer);
         }
 
         /*
@@ -245,18 +253,17 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
          * the length of the filename is given in the header
          * a sent packet gives the name of the file
          * a new file is created.
-         * the number of packets of length PACKET_SIZE is sent in a header
+         * the number of packets of length PACKET_SIZE is received in a header
          * then, those packets are received.
-         * a header is send to tell the size of the last packet
+         * a header is received to tell the size of the last packet
          * then, the last packet is received.
          */
-        else if (in_header.type == PUT){
+        else if (type == PUT){
           printf("put\n");
+          char buffer[len];
+          read(sd2, buffer, len);
 
-          char buffer[in_header.length];
-          read(sd2, buffer, in_header.length);
-
-          printf("file: %s\n", buffer);
+          // printf("file: %s\n", buffer);
 
           char *curr_dir;
           int i = getPwd(&curr_dir);
@@ -266,41 +273,48 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             strcat(str, "/");
             strcat(str, buffer);
 
-            FILE* f = NULL;
-            f = fopen(str, "wb");
-
             msgHeader in_header;
             read(sd2, &in_header, sizeof(msgHeader));
-            printf("nb of full packets: %i\n", in_header.length);
 
-            int j;
+            if(ntohl(in_header.type) != ERRNO_RET){
+              FILE* f = NULL;
+              f = fopen(str, "wb");
 
-            char received[PACKET_SIZE];
-            for(j = 0; j<in_header.length; j++){
-              
-              read(sd2, received, PACKET_SIZE);
-              fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
-              if(j%1==0){
-                printf("%i/%i\n", j, in_header.length);
+              len = ntohl(in_header.length);
+              // printf("nb of full packets: %i\n", len);
+
+              int j;
+
+              char received[PACKET_SIZE];
+              for(j = 0; j<len; j++){
+                
+                read(sd2, received, PACKET_SIZE);
+                fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
+                // if(j%100==0){
+                //   printf("%i/%i\n", j, len);
+                // }
               }
-            }
-            printf("Packets received %i\n", j);
+              // printf("Packets received %i\n", j);
 
-            msgHeader end_header;
-            read(sd2, &end_header, sizeof(end_header));
+              msgHeader end_header;
+              read(sd2, &end_header, sizeof(end_header));
 
-            if(end_header.type == GET_LAST){
-              if(end_header.length != 0){
-                char last[end_header.length];
-                read(sd2, last, end_header.length);
-                fwrite(last, end_header.length, 1, f);
+              if(ntohl(end_header.type) == GET_LAST){
+                int elen = ntohl(end_header.length);
+                if(elen != 0){
+                  char last[elen];
+                  read(sd2, last, elen);
+                  fwrite(last, sizeof(last[0]), sizeof(last)/sizeof(last[0]), f);
+                } else {
+                  
+                }
+                printf("File received: %s\n", buffer);
               } else {
-                printf("Whole file received\n");
+                printf("bug\n");
               }
+              fclose(f);
             } else {
-              printf("bug\n");
             }
-            fclose(f);
           }
         }
 
@@ -308,8 +322,8 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
          * bye
          * the server acknolodges that the client is out and terminates.
          */
-        else if (in_header.type == BYE){
-          printf("Farewell, my beloved friend !\n");
+        else if (type == BYE){
+          printf("Client disconnected !\n");
           close(sd2);
           break;
         }

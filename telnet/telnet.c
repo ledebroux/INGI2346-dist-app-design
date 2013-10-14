@@ -12,10 +12,18 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <errno.h>
+
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
+/* TODO :
+- rename files
+- add ipaddress as arg
+- when cd, what to do with ok or fail
+
+*/
 
 
 int getStringLength(char*, char);
@@ -65,14 +73,14 @@ main(argc, argv) int    argc; char   *argv[ ];
    */
 
   while(strcmp(buffer, "bye")) {
-    printf("Enter a command\n");
+    printf(">> ");
     fgets(buffer,512,stdin);
 
     /*
      * Local command pwd : retrieve the current directory and print in on sdtout 
      */
     if(cmdcmp("lpwd", buffer)){
-      printf("Local command: pwd\n");
+      //printf("Local command: pwd\n");
       char *curr_dir;
       int i = getPwd(&curr_dir);
       if(!i){
@@ -89,7 +97,7 @@ main(argc, argv) int    argc; char   *argv[ ];
      * and pass thoses references to the cd method (from utils.c) 
      */
     else if(cmdcmp("lcd", buffer)){
-      printf("Local command: cd\n"); 
+      // printf("Local command: cd\n"); 
       char * current;
       int i = getPwd(&current);
       char* arg;
@@ -108,7 +116,7 @@ main(argc, argv) int    argc; char   *argv[ ];
      * with s = -1 (local command)
      */
     else if(cmdcmp("lls", buffer)){
-      printf("Local command: ls\n"); 
+      // printf("Local command: ls\n"); 
       char *current;
       int i = getPwd(&current);
       if (i==0){
@@ -129,14 +137,15 @@ main(argc, argv) int    argc; char   *argv[ ];
      * The client waits for a header from the server to know how much bytes to read
      */
     else if(cmdcmp("pwd", buffer)){
-      printf("Distant command: pwd\n"); 
+      // printf("Distant command: pwd\n"); 
       sendType(sd1, PWD, 0);
       if(read(sd1, &in_header, sizeof(msgHeader))){
-        if(in_header.type == GET_SIZE){
-          read(sd1, buffer, in_header.length);
+        int len = ntohl(in_header.length);
+        if(ntohl(in_header.type) == GET_SIZE){
+          read(sd1, buffer, len);
           printf("%s\n", buffer);
         }else{
-          fprintf(stderr, "Error : %s\n",strerror(in_header.length));
+          fprintf(stderr, "Error : %s\n",strerror(len));
         }
       }
     }
@@ -152,14 +161,16 @@ main(argc, argv) int    argc; char   *argv[ ];
      * who announces the length the client has to read. 
      */
     else if(cmdcmp("cd", buffer)){
-      printf("Distant command: cd\n"); 
+      // printf("Distant command: cd\n"); 
       char* arg;
       getArg("cd", buffer, &arg);
 
       sendType(sd1, CD, strlen(arg)+1);
       sendMsg(arg, sd1);
       if(read(sd1, buffer, 6)){
-        printf("%s\n", buffer);
+        if(strcmp(buffer, "ok!")){
+          printf("Error: cd failed\n");
+        }
       }
       free(arg);
     }
@@ -173,28 +184,45 @@ main(argc, argv) int    argc; char   *argv[ ];
      * the client read every entries until it reads end.
      */
     else if(cmdcmp("ls", buffer)){
-      printf("Distant command: ls\n");
+      // printf("Distant command: ls\n");
       sendType(sd1, LS, 0);
       while(read(sd1, buffer, 256)){
         if(!strcmp(buffer, "end")){
-          printf("end of ls\n");
+          // printf("end of ls\n");
           read(sd1, &in_header, sizeof(msgHeader));
-          if(in_header.type == ERRNO_RET && in_header.length != 0){
-            fprintf(stderr, "Error : %s\n",strerror(in_header.type));
+          if(ntohl(in_header.type) == ERRNO_RET && ntohl(in_header.length) != 0){
+            fprintf(stderr, "Error : %s\n",strerror(ntohl(in_header.length)));
           }
           break;
         }
-        printf("ls : %s\n", buffer);
+        printf("%s\n", buffer);
       }
     }
+
+    /*
+     * Distant command bye:
+     * the client wishes to terminate
+     * it informs the server and terminates
+     */
     else if(cmdcmp("bye", buffer)){
-      printf("Bye\n");
+      // printf("Bye\n");
 
       sendType(sd1, BYE, 0);
       close(sd1);
       break;
     }
     
+    /*
+     * Distant command get:
+     * the client wants to retrieve a file from the server
+     * the length of the filename is send in the header
+     * the filename is send to the server
+     * a new file is created client-side
+     * the number of packets of length PACKET_SIZE is received in a header
+     * then, those packets are received.
+     * a header is received to tell the size of the last packet
+     * then, the last packet is received.
+     */
     else if(cmdcmp("get", buffer)){
       printf("Distant command: get\n"); 
       char* arg;
@@ -211,46 +239,67 @@ main(argc, argv) int    argc; char   *argv[ ];
           strcat(str, "/");
           strcat(str, arg);
 
-          FILE* f = NULL;
-          f = fopen(str, "wb");
-
-          //msgHeader in_header;
           read(sd1, &in_header, sizeof(msgHeader));
-          printf("nb of full packets: %i\n", in_header.length);
+          
+          if(ntohl(in_header.type) != ERRNO_RET){
+            FILE* f = NULL;
+            f = fopen(str, "wb");
 
-          int j;
+            //read(sd1, &in_header, sizeof(msgHeader));
+            int len = ntohl(in_header.length);
+            // printf("nb of full packets: %i\n", len);
 
-          char received[PACKET_SIZE];
-          for(j = 0; j<in_header.length; j++){
-            
-            read(sd1, received, PACKET_SIZE);
-            fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
-            if(j%1==0){
-              printf("%i/%i\n", j, in_header.length);
+            int j;
+
+            char received[PACKET_SIZE];
+            for(j = 0; j<len; j++){
+              
+              read(sd1, received, PACKET_SIZE);
+              fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
+              // if(j%100==0){
+              //   printf("%i/%i\n", j, len);
+              // }
             }
+
+            msgHeader end_header;
+            read(sd1, &end_header, sizeof(end_header));
+
+            if(ntohl(end_header.type) == GET_LAST){
+              int elen = ntohl(end_header.length);
+              if(elen != 0){
+                char last[elen];
+                read(sd1, last, elen);
+                fwrite(last, sizeof(last[0]), sizeof(last)/sizeof(last[0]), f);
+              } else {
+                
+              }
+              printf("File received: %s\n", arg);
+            } 
+            fclose(f);
+          } else {
+            fprintf(stderr, "Error : %s\n",strerror(ntohl(in_header.length)));
           }
-
-          msgHeader end_header;
-          read(sd1, &end_header, sizeof(end_header));
-
-          if(end_header.type == GET_LAST){
-            if(end_header.length != 0){
-              char last[end_header.length];
-              read(sd1, last, end_header.length);
-              fwrite(last, end_header.length, 1, f);
-            } else {
-              printf("Whole file received\n");
-            }
-          } 
-          fclose(f);
+          
         }
         free(arg); 
       } else {
         printf("get requires an argument\n");
       }
     }
+
+    /*
+     * get
+     * the length of the filename is sent in the header
+     * the filename is sent in the next packet
+     * the client then sends the number of packet of PACKET_SIZE size
+     * to be sent.
+     * then, the file is splitted and sent
+     * before sending the last packet, a header is sent to inform 
+     * the server of the length of the last packet
+     * and the last packet is sent.
+     */
     else if(cmdcmp("put", buffer)){
-      printf("Distant command: put\n"); 
+      // printf("Distant command: put\n"); 
       char* arg;
       getArg("put", buffer, &arg);
 
@@ -267,6 +316,7 @@ main(argc, argv) int    argc; char   *argv[ ];
           strcat(str, "/");
           strcat(str, arg);
           FILE* f = NULL;
+          errno = 0;
           f = fopen(str, "rb");
           if(f != NULL){
 
@@ -274,12 +324,12 @@ main(argc, argv) int    argc; char   *argv[ ];
             int size = ftell(f);
             rewind(f);
 
-            printf("file len: %i\n", size);
+            // printf("file len: %i\n", size);
             
 
             int nb_packets = size/PACKET_SIZE;
 
-            printf("nb_packets: %i\n", nb_packets);
+            // printf("nb_packets: %i\n", nb_packets);
 
             sendType(sd1, GET_SIZE, nb_packets);
             int j;
@@ -287,14 +337,14 @@ main(argc, argv) int    argc; char   *argv[ ];
               unsigned char part[PACKET_SIZE];
               int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
               write(sd1, part, PACKET_SIZE);
-              if(j%1==0){
-                printf("%i/%i\n", j, nb_packets);
-              }
+              // if(j%100==0){
+              //   printf("%i/%i\n", j, nb_packets);
+              // }
             }
 
             int last_size = size-nb_packets*PACKET_SIZE;
             sendType(sd1, GET_LAST, last_size);
-            printf("last_size: %i\n", last_size);
+            // printf("last_size: %i\n", last_size);
             if(last_size != 0){
               unsigned char part[last_size];
               int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
@@ -302,9 +352,15 @@ main(argc, argv) int    argc; char   *argv[ ];
               write(sd1, part, last_size);
             }
             fclose(f);
+            printf("File sent: %s\n", arg);
           } 
+          else {
+            printf("File not found\n");
+            sendType(sd1, ERRNO_RET, errno);
+            // fprintf(stderr, "Error : %s\n",strerror(errno));
+          }
         }
-        printf("File sent: %s\n", arg);
+        
         free(arg);
       } else {
         printf("put requires an argument\n");
@@ -312,7 +368,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       
     }
     else{
-      printf("Not Today\n");
+      printf("Unknown command\n");
     }
    
   } 
