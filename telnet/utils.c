@@ -29,15 +29,11 @@ char *replace_str(char *str, char *orig, char *rep)
 {
   static char buffer[4096];
   char *p;
-
   if(!(p = strstr(str, orig)))  // Is 'orig' even in 'str'?
     return str;
-
   strncpy(buffer, str, p-str); // Copy characters from 'str' start to 'orig' st$
   buffer[p-str] = '\0';
-
   sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
-
   return buffer;
 }
 
@@ -73,9 +69,13 @@ int getArg(char* cmd, char* str, char** arg_result){
     }
   }
   temp[j]=0;
+  errno = 0;
   *arg_result = malloc(strlen(temp)+1);
-  strcpy(*arg_result, temp);
-  return 0;
+  if(errno == 0){
+    strcpy(*arg_result, temp);
+    return 0;
+  }
+  return errno;
 }
 
 /*
@@ -83,8 +83,9 @@ int getArg(char* cmd, char* str, char** arg_result){
  * socket descriptor s 
  */
  int sendMsg(char* msg, int s){
+  errno = 0;
   write(s, msg, strlen(msg)+1);
-  return 0;
+  return errno;
 }
 
 /*
@@ -93,8 +94,9 @@ int getArg(char* cmd, char* str, char** arg_result){
  $ h is a of a msgHeader type, see in header.h for definition
  */
 int sendHeader(msgHeader* h, int s){
+  errno = 0
   write(s, h, sizeof(h));
-  return 0;
+  return errno;
 }
 
 /*
@@ -106,7 +108,8 @@ int sendType(int s, int type, int length) {
   msgHeader h;
   h.length = length;
   h.type = type;
-  sendHeader(&h, s);
+  int result = sendHeader(&h, s);
+  return result;
 }
 
 

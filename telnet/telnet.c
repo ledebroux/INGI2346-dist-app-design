@@ -56,6 +56,7 @@ main(argc, argv) int    argc; char   *argv[ ];
    * between user possibility and performance.
    */
   char buffer[512];
+  msgHeader in_header;
 
   /*
    * Compares the content of the buffer (filled from stdin)
@@ -115,15 +116,13 @@ main(argc, argv) int    argc; char   *argv[ ];
      * Send a header containing the type of the message : PWD.
      * The length field of the header contains 0, since there is no need 
      * for the server to read something. The type PWD is enough.
-     * The client waits for the response from the server : since a path can be MAX_PATH long,
-     * and MAX_PATH is 4096, we read for 4096 bits.
+     * The client waits for a header from the server to know how much bytes to read
      */
-
-     // TODO : change 4096 : more usefull to send back a header that contains the length of the path to read
     else if(cmdcmp("pwd", buffer)){
       printf("Distant command: pwd\n"); 
       sendType(sd1, PWD, 0);
-      if(read(sd1, buffer, 4096)){
+      if(read(sd1, &in_header, sizeof(msgHeader))){
+        read(sd1, buffer, in_header.length);
         printf("%s\n", buffer);
       }
     }
@@ -198,7 +197,7 @@ main(argc, argv) int    argc; char   *argv[ ];
           FILE* f = NULL;
           f = fopen(str, "wb");
 
-          msgHeader in_header;
+          //msgHeader in_header;
           read(sd1, &in_header, sizeof(msgHeader));
           printf("nb of full packets: %i\n", in_header.length);
 
@@ -303,19 +302,9 @@ main(argc, argv) int    argc; char   *argv[ ];
 }
 
 int getString(char* data, char** result, char sep){
-  // int ja;
-  // for(ja=0; ja<strlen(data); ja++){
-  //   printf("tok%i: %i\n", ja, data[ja]);
-  // }
   printf("data: %s\n", data);
-  // int ja;
-  // for(ja=0; ja<strlen(data); ja++){
-  //   printf("tok%i: %i\n", ja, data[ja]);
-  // }
-  // printf("getstr: %s\n", data);
   int i = getStringLength(data, sep);
   printf("len: %i\n", i);
-  // printf("getstrlen: %i\n", i);
   char str[i+1];
   int j;
   for(j=0; j<i+1; j++){
@@ -325,8 +314,6 @@ int getString(char* data, char** result, char sep){
     else {
       str[j] = data[j]; 
     }
-    // str[j] = data[j];
-    // printf("datachar: %i\n", data[j]);
   }
   printf("getstr: %s\n", str);
   *result = str;
@@ -347,19 +334,6 @@ int getStringLength(char* str, char sep){
   // i++;
   return i;
 }
-
-// int fillString(char* data, char* result, int length){
-//   int j;
-//   for(j=0; j<length; j++){
-//     if(j != length-1){
-//       result[j] = data[j];
-//     } 
-//     else {
-//       result[j] = '\0';
-//     }
-//   }
-//   return 0;
-// }
 
 int cmdcmp(char* cmd, char* str){
   int i;
