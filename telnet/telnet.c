@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8010
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -255,25 +254,4 @@ int cmdcmp(char* cmd, char* str){
   return 1;
 }
 
-int getArg(char* cmd, char* str, char** arg_result){
-  int len = strlen(cmd);
-  int i=len;
-  while(str[i]==32){
-    i++;
-  }
-  char temp[strlen(str)];
-  int j;
-  for(j=0; j<strlen(str); j++){
-    if(str[j+i]!=0 && str[j+i]!=32 && str[j+i]!=10){
-      temp[j] = str[j+i];
-    } else {
-      break;
-    }
-  }
-  temp[j]=0;
-  //printf("temp: %s\n", temp);
-  *arg_result = temp;
-  // printf("targ: %s\n", *arg);
 
-  return 0;
-}

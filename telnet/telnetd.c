@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#define TELNETD_PORT 8010
+
 
 
 int sigflag;
@@ -115,7 +115,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           int i = getPwd(&curr_dir);
           printf("%s\n", curr_dir);
           if(!i){
-            write(sd2, curr_dir, strlen(curr_dir));
+            write(sd2, curr_dir, strlen(curr_dir)+1);
           }
         } 
         else if (in_header.type == LS){
@@ -136,11 +136,14 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
 
           char * current;
           int i = getPwd(&current);
-          int j = cd(strtok(buffer,"lcd "), &current);
+          // int j = cd(strtok(buffer,"lcd "), &current);
+          //char* arg;
+          //getArg("lcd", buffer, &arg);
+          int j = cd(buffer, &current);
           if(j == 0){
-            write(sd2, "ok!", strlen("ok!"));
+            write(sd2, "ok!", strlen("ok!")+1);
           } else{
-            write(sd2, "fail!", strlen("fail!"));
+            write(sd2, "fail!", strlen("fail!")+1);
           }
         }
         else if (in_header.type == GET){
