@@ -58,15 +58,8 @@ main(argc, argv) int    argc; char   *argv[ ];
   char buffer[512];
 
   /*
-  TODO: 
-  - if no arg is given when one is needed, do not send the header and throw and error.
-  - if an arg is given when none is needed, do not send the header.
-  */
-
-
-  /*
    * Compares the content of the buffer (filled from stdin)
-   * and performs the different operation
+   * and performs the different operations
    */
 
   while(strcmp(buffer, "bye")) {

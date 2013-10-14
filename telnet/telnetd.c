@@ -117,11 +117,19 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
       
       msgHeader in_header;
       
+      /*
+       * The server waits for a header to be sent.
+       * Upon arrival, the exectution depends on the type of the header.
+       */
       printf("Waiting for command\n");
       while(read(sd2, &in_header, sizeof(msgHeader))){
-        // printf("Type = %i\n", in_header.type);
-        // printf("Length = %i\n", in_header.length);
-        if (in_header.type == PWD){ // if msg is of type 1
+
+        /*
+         * pwd: print working directory
+         * Computed by the method getPwd
+         * The result is sent back to the client
+         */
+        if (in_header.type == PWD){
           char *curr_dir;
           int i = getPwd(&curr_dir);
           printf("%s\n", curr_dir);
@@ -129,6 +137,12 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             write(sd2, curr_dir, strlen(curr_dir)+1);
           }
         } 
+
+        /*
+         * ls
+         * the result of the ls command is computed by getLs
+         * the result is sent to the client in the function call
+         */
         else if (in_header.type == LS){
           printf("ls\n");
           char *curr_dir;
@@ -138,7 +152,12 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           }
         } 
 
-        // TODO : If not ok!
+        /*
+         * cd
+         * the length of the path in argument is given in the header
+         * the path is given in the packet that is read below
+         * the current directoryis then changed
+         */
         else if (in_header.type == CD){
           printf("cd\n");
           char buffer[in_header.length];
@@ -147,9 +166,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
 
           char * current;
           int i = getPwd(&current);
-          // int j = cd(strtok(buffer,"lcd "), &current);
-          //char* arg;
-          //getArg("lcd", buffer, &arg);
+
           int j = cd(buffer, &current);
           if(j == 0){
             write(sd2, "ok!", strlen("ok!")+1);
@@ -157,6 +174,18 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             write(sd2, "fail!", strlen("fail!")+1);
           }
         }
+
+        /*
+         * get
+         * the length of the filename is given in the header
+         * the next read packet states the file to get.
+         * the server then sends the number of packet of PACKET_SIZE size
+         * it will send to the client.
+         * then, the file is splitted and sent
+         * before sending the last packet,  header is sent to inform 
+         * the client of the length of the last packet
+         * and the last packet is sent.
+         */
         else if (in_header.type == GET){
           printf("get\n");
           char buffer[in_header.length];
@@ -190,7 +219,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               }
               int last_size = size-nb_packets*PACKET_SIZE;
               sendType(sd2, GET_LAST, last_size);
-              printf("last_size: %i\n", last_size);
+              //printf("last_size: %i\n", last_size);
               if(last_size != 0){
                 unsigned char part[last_size];
                 int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
@@ -202,6 +231,17 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           }
           printf("File sent: %s\n", buffer);
         }
+
+        /*
+         * put
+         * the length of the filename is given in the header
+         * a sent packet gives the name of the file
+         * a new file is created.
+         * the number of packets of length PACKET_SIZE is sent in a header
+         * then, those packets are received.
+         * a header is send to tell the size of the last packet
+         * then, the last packet is received.
+         */
         else if (in_header.type == PUT){
           printf("put\n");
 
@@ -255,16 +295,18 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             fclose(f);
           }
         }
+
+        /*
+         * bye
+         * the server acknolodges that the client is out and terminates.
+         */
         else if (in_header.type == BYE){
           printf("Farewell, my beloved friend !\n");
           close(sd2);
           break;
         }
         else {
-          char buffer[in_header.length];
-          read(sd2, buffer, in_header.length);
-          printf("I received %s\n", buffer);
-          printf("size str = %lu\n", sizeof(buffer));
+          printf("Error: shouldn't be reached")
         }
         printf("Waiting for command\n");
       }
