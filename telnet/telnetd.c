@@ -1,3 +1,9 @@
+/*
+ * Thibaut Knop & Lenoard Debroux
+ * INGI2146 - Mission 1
+ * myftpd.c
+ */
+
 #include "header.h"
 #include "utils.h"
 #include <sys/types.h>
