@@ -18,6 +18,13 @@
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
+/* TODO :
+- rename files
+- add ipaddress as arg
+- when cd, what to do with ok or fail
+
+*/
+
 
 int getStringLength(char*, char);
 int fillString(char*, char*, int);
@@ -161,7 +168,9 @@ main(argc, argv) int    argc; char   *argv[ ];
       sendType(sd1, CD, strlen(arg)+1);
       sendMsg(arg, sd1);
       if(read(sd1, buffer, 6)){
-        printf("%s\n", buffer);
+        if(strcmp(buffer, "ok!")){
+          printf("Error: cd failed\n");
+        }
       }
       free(arg);
     }
@@ -238,7 +247,7 @@ main(argc, argv) int    argc; char   *argv[ ];
 
             //read(sd1, &in_header, sizeof(msgHeader));
             int len = ntohl(in_header.length);
-            printf("nb of full packets: %i\n", len);
+            // printf("nb of full packets: %i\n", len);
 
             int j;
 
@@ -247,9 +256,9 @@ main(argc, argv) int    argc; char   *argv[ ];
               
               read(sd1, received, PACKET_SIZE);
               fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
-              if(j%100==0){
-                printf("%i/%i\n", j, len);
-              }
+              // if(j%100==0){
+              //   printf("%i/%i\n", j, len);
+              // }
             }
 
             msgHeader end_header;
@@ -262,8 +271,9 @@ main(argc, argv) int    argc; char   *argv[ ];
                 read(sd1, last, elen);
                 fwrite(last, sizeof(last[0]), sizeof(last)/sizeof(last[0]), f);
               } else {
-                printf("Whole file received\n");
+                
               }
+              printf("File received: %s\n", arg);
             } 
             fclose(f);
           } else {
@@ -314,12 +324,12 @@ main(argc, argv) int    argc; char   *argv[ ];
             int size = ftell(f);
             rewind(f);
 
-            printf("file len: %i\n", size);
+            // printf("file len: %i\n", size);
             
 
             int nb_packets = size/PACKET_SIZE;
 
-            printf("nb_packets: %i\n", nb_packets);
+            // printf("nb_packets: %i\n", nb_packets);
 
             sendType(sd1, GET_SIZE, nb_packets);
             int j;
@@ -327,14 +337,14 @@ main(argc, argv) int    argc; char   *argv[ ];
               unsigned char part[PACKET_SIZE];
               int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
               write(sd1, part, PACKET_SIZE);
-              if(j%100==0){
-                printf("%i/%i\n", j, nb_packets);
-              }
+              // if(j%100==0){
+              //   printf("%i/%i\n", j, nb_packets);
+              // }
             }
 
             int last_size = size-nb_packets*PACKET_SIZE;
             sendType(sd1, GET_LAST, last_size);
-            printf("last_size: %i\n", last_size);
+            // printf("last_size: %i\n", last_size);
             if(last_size != 0){
               unsigned char part[last_size];
               int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);

@@ -220,16 +220,16 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               int size = ftell(f);
               rewind(f);
               int nb_packets = size/PACKET_SIZE;
-              printf("packets %i", nb_packets);
+              // printf("packets %i\n", nb_packets);
               sendType(sd2, GET_SIZE, nb_packets);
               int j;
               for(j = 0; j<nb_packets; j++){
                 unsigned char part[PACKET_SIZE];
                 int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
                 write(sd2, part, PACKET_SIZE);
-                if(j%100==0){
-                  printf("%i/%i\n", j, nb_packets);
-                }
+                // if(j%100==0){
+                //   printf("%i/%i\n", j, nb_packets);
+                // }
               }
               int last_size = size-nb_packets*PACKET_SIZE;
               sendType(sd2, GET_LAST, last_size);
@@ -281,7 +281,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               f = fopen(str, "wb");
 
               len = ntohl(in_header.length);
-              printf("nb of full packets: %i\n", len);
+              // printf("nb of full packets: %i\n", len);
 
               int j;
 
@@ -290,11 +290,11 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
                 
                 read(sd2, received, PACKET_SIZE);
                 fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
-                if(j%100==0){
-                  printf("%i/%i\n", j, len);
-                }
+                // if(j%100==0){
+                //   printf("%i/%i\n", j, len);
+                // }
               }
-              printf("Packets received %i\n", j);
+              // printf("Packets received %i\n", j);
 
               msgHeader end_header;
               read(sd2, &end_header, sizeof(end_header));
@@ -306,8 +306,9 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
                   read(sd2, last, elen);
                   fwrite(last, sizeof(last[0]), sizeof(last)/sizeof(last[0]), f);
                 } else {
-                  printf("Whole file received\n");
+                  
                 }
+                printf("File received: %s\n", buffer);
               } else {
                 printf("bug\n");
               }
