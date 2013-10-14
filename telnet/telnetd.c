@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#define TELNETD_PORT 8010
+#define TELNETD_PORT 8011
 
 
 int sigflag;

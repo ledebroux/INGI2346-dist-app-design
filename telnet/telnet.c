@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define TELNETD_PORT  8010
+#define TELNETD_PORT  8011
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -79,9 +79,13 @@ main(argc, argv) int    argc; char   *argv[ ];
       }
 
     }
+    // TODO Replace hard path by pwd path
+
     else if(cmdcmp("lls", buffer)){
       printf("Local command: ls\n"); 
-      getLs("/home/inekar/Documents/git/INGI2346-dist-app-design/telnet", -1);
+      char *current;
+      int i = getPwd(&current);
+      getLs(current, -1);
     }
     else if(cmdcmp("pwd", buffer)){
       printf("Distant command: pwd\n"); 
@@ -104,7 +108,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       sendHeader(&h, sd1);
       getArg("cd", buffer, &arg);     
       sendMsg(arg, sd1);
-      if(read(sd1, buffer, 4096)){
+      if(read(sd1, buffer, 6)){
         printf("%s\n", buffer);
       }
     }
