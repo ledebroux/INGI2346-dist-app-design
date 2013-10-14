@@ -4,6 +4,7 @@
  * header.h
  */
 
+#include <stdint.h>
 
 /*
 Each message sent by the client will be preceded by the sending of
@@ -26,7 +27,7 @@ Types are defined as follows
 #define PACKET_SIZE 1024
 
 struct msgHeader{
-	int length;
-	int type;
+	uint32_t length;
+	uint32_t type;
 };
 typedef struct msgHeader msgHeader;

@@ -193,6 +193,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       close(sd1);
       break;
     }
+    
     else if(cmdcmp("get", buffer)){
       printf("Distant command: get\n"); 
       char* arg;
