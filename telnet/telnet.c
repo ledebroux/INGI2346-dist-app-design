@@ -179,7 +179,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       }
     }
     else if(cmdcmp("bye", buffer)){
-      printf("bye\n");
+      printf("Bye\n");
 
       sendType(sd1, BYE, 0);
       close(sd1);
@@ -189,80 +189,117 @@ main(argc, argv) int    argc; char   *argv[ ];
       printf("Distant command: get\n"); 
       char* arg;
       getArg("get", buffer, &arg);
+      if(strlen(arg) > 0){
+        sendType(sd1, GET, strlen(arg)+1);   
+        sendMsg(arg, sd1);
 
-      sendType(sd1, GET, strlen(arg)+1);   
-      sendMsg(arg, sd1);
+        char *curr_dir;
+        int i = getPwd(&curr_dir);
+        if(!i){
+          char str[strlen(curr_dir) + strlen(arg) + 1];
+          strcpy(str, curr_dir);
+          strcat(str, "/");
+          strcat(str, arg);
 
-      char *curr_dir;
-      int i = getPwd(&curr_dir);
-      if(!i){
-        char str[strlen(curr_dir) + strlen(arg) + 1];
-        strcpy(str, curr_dir);
-        strcat(str, "/");
-        strcat(str, arg);
+          FILE* f = NULL;
+          f = fopen(str, "wb");
 
-        FILE* f = NULL;
-        f = fopen(arg, "wb");
+          msgHeader in_header;
+          read(sd1, &in_header, sizeof(msgHeader));
+          printf("nb of full packets: %i\n", in_header.length);
 
-        msgHeader in_header;
-        read(sd1, &in_header, sizeof(msgHeader));
-        printf("nb of full packets: %i\n", in_header.length);
+          int j;
 
-        int j;
-
-        char received[GET_PACKET_SIZE];
-        for(j = 0; j<in_header.length; j++){
-          
-          read(sd1, received, GET_PACKET_SIZE);
-          // printf("got it\n");
-          fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
-          if(j%1==0){
-            printf("%i/%i\n", j, in_header.length);
+          char received[PACKET_SIZE];
+          for(j = 0; j<in_header.length; j++){
+            
+            read(sd1, received, PACKET_SIZE);
+            fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
+            if(j%1==0){
+              printf("%i/%i\n", j, in_header.length);
+            }
           }
+
+          msgHeader end_header;
+          read(sd1, &end_header, sizeof(end_header));
+
+          if(end_header.type == GET_LAST){
+            if(end_header.length != 0){
+              char last[end_header.length];
+              read(sd1, last, end_header.length);
+              fwrite(last, end_header.length, 1, f);
+            } else {
+              printf("Whole file received\n");
+            }
+          } 
+          fclose(f);
         }
-        printf("Packets received %i\n", j);
-
-        // printf("for done");
-        msgHeader end_header;
-        read(sd1, &end_header, sizeof(end_header));
-
-        if(end_header.type == GET_LAST){
-          if(end_header.length != 0){
-            // printf("last\n");
-            char last[end_header.length];
-            read(sd1, last, end_header.length);
-            fwrite(last, end_header.length, 1, f);
-            //printf("File received %s\n", last);
-          } else {
-            printf("Whole file received\n");
-          }
-        } else {
-          printf("bug\n");
-        }
-
-
-
-        fclose(f);
+        free(arg); 
+      } else {
+        printf("get requires an argument\n");
       }
-      close(arg);
-      free(arg);
-
-
-      /*
-      Implement receiving the message
-      */
     }
     else if(cmdcmp("put", buffer)){
       printf("Distant command: put\n"); 
       char* arg;
       getArg("put", buffer, &arg);
 
-      sendType(sd1, PUT, strlen(arg)+1);  
-      sendMsg(arg, sd1);
-      free(arg);
-      /*
-      Implement sending the file
-      */
+      if(strlen(arg) > 0){
+        sendType(sd1, PUT, strlen(arg)+1);  
+        sendMsg(arg, sd1);
+        
+        char *curr_dir;
+        int i = getPwd(&curr_dir);
+        if(!i){
+
+          char str[strlen(curr_dir) + strlen(arg) + 1];
+          strcpy(str, curr_dir);
+          strcat(str, "/");
+          strcat(str, arg);
+          FILE* f = NULL;
+          f = fopen(str, "rb");
+          if(f != NULL){
+
+            fseek(f, 0, SEEK_END);
+            int size = ftell(f);
+            rewind(f);
+
+            printf("file len: %i\n", size);
+            
+
+            int nb_packets = size/PACKET_SIZE;
+
+            printf("nb_packets: %i\n", nb_packets);
+
+            sendType(sd1, GET_SIZE, nb_packets);
+            int j;
+            for(j = 0; j<nb_packets; j++){
+              unsigned char part[PACKET_SIZE];
+              int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+              write(sd1, part, PACKET_SIZE);
+              if(j%1==0){
+                printf("%i/%i\n", j, nb_packets);
+              }
+            }
+
+            int last_size = size-nb_packets*PACKET_SIZE;
+            sendType(sd1, GET_LAST, last_size);
+            printf("last_size: %i\n", last_size);
+            if(last_size != 0){
+              unsigned char part[last_size];
+              int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+
+              write(sd1, part, last_size);
+            }
+            fclose(f);
+          } 
+        }
+        printf("File sent: %s\n", arg);
+        free(arg);
+      } else {
+        printf("put requires an argument\n");
+      }
+      
     }
     else{
       printf("Not Today\n");
