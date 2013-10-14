@@ -9,6 +9,10 @@
 #include <errno.h>
 
 
+/*
+ * Replace a substring orig from str by a substring rep, if orig is in str.
+ * Return a pointer to the new str.
+ */
 char *replace_str(char *str, char *orig, char *rep)
 {
   static char buffer[4096];
@@ -25,12 +29,19 @@ char *replace_str(char *str, char *orig, char *rep)
   return buffer;
 }
 
+/*
+ * Return 0 if str starts with pre, 1 else.
+ */
 int startsWith(const char *str, const char *pre){
     size_t lenpre = strlen(pre),
            lenstr = strlen(str);
     return lenstr < lenpre ? -1 : strncmp(pre, str, lenpre) == 0;
 }
 
+
+/*
+ * 
+ */
 int getLs(char* path, int s){
   DIR *dir;
   struct dirent *dent;
@@ -66,18 +77,24 @@ int getLs(char* path, int s){
 int cd(char* dir, char** path){
   if(startsWith(dir,"~") != 0){
     *path = getenv("HOME");
-    char temp[strlen(dir)];
-    int i = 0;
-    for (i;i<strlen(dir)-2;i++){
-      temp[i] = dir[i+2];
+    if(strlen(dir) > 1){
+      char temp[strlen(dir)];
+      int i = 0;
+      for (i;i<strlen(dir)-2;i++){
+        temp[i] = dir[i+2];
+      }
+      temp[i] = 0;
+      char str[strlen(temp) + strlen(*path) + 1];
+      strcpy(str, *path);
+      strcat(str, "/");
+      strcat(str, temp);
+      *path = malloc(strlen(str)+1);
+      strcpy(*path,str);
     }
-    temp[i] = 0;
-    char str[strlen(temp) + strlen(*path) + 1];
-    strcpy(str, *path);
-    strcat(str, "/");
-    strcat(str, temp);
-    *path = malloc(strlen(str)+1);
-    strcpy(*path,str);
+    else{
+      *path = malloc(strlen(getenv("HOME")));
+      strcpy(*path,getenv("HOME"));
+    }
   } else if(startsWith(dir,"/") == 0){
     char str[strlen(dir) + strlen(*path) + 1];
     strcpy(str, *path);

@@ -11,13 +11,19 @@
 
 int sigflag;
 
+void resquiescat(){
+  int status;
+  wait(&status);
+  sigflag = 1;
+} /*called by SIGCHLD event handler*/
+
 main (argc, argv) int argc; char *argv[ ];
 {
   int sdw, sd2,clilen,childpid;
   struct sockaddr_in m1,m2;
 
   /* Prepare acknowledging child termination */
-  //sigset(SIGCHLD, resquiescat);
+  sigset(SIGCHLD, resquiescat);
 
 /*
 
@@ -257,7 +263,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
 
 */
 
-//int resquiescat(){wait();sigflag = 1;} /*called by SIGCHLD event handler*/
+
 
 /*
 
