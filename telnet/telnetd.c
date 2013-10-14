@@ -306,7 +306,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           break;
         }
         else {
-          printf("Error: shouldn't be reached")
+          printf("Error: shouldn't be reached");
         }
         printf("Waiting for command\n");
       }
