@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <errno.h>
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
@@ -178,7 +179,7 @@ main(argc, argv) int    argc; char   *argv[ ];
         if(!strcmp(buffer, "end")){
           printf("end of ls\n");
           read(sd1, &in_header, sizeof(msgHeader));
-          if(in_header.type == ERRNO_RET && in_header.length == 0){
+          if(in_header.type == ERRNO_RET && in_header.length != 0){
             fprintf(stderr, "Error : %s\n",strerror(in_header.type));
           }
           break;
