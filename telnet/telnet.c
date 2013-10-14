@@ -143,7 +143,7 @@ main(argc, argv) int    argc; char   *argv[ ];
         strcat(str, arg);
 
         FILE* f = NULL;
-        f = fopen(arg, "wb");
+        f = fopen(str, "wb");
 
         msgHeader in_header;
         read(sd1, &in_header, sizeof(msgHeader));
@@ -151,10 +151,10 @@ main(argc, argv) int    argc; char   *argv[ ];
 
         int j;
 
-        char received[GET_PACKET_SIZE];
+        char received[PACKET_SIZE];
         for(j = 0; j<in_header.length; j++){
           
-          read(sd1, received, GET_PACKET_SIZE);
+          read(sd1, received, PACKET_SIZE);
           // printf("got it\n");
           fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
           if(j%1==0){
@@ -185,7 +185,6 @@ main(argc, argv) int    argc; char   *argv[ ];
 
         fclose(f);
       }
-      close(arg);
       free(arg);
 
 
@@ -200,6 +199,65 @@ main(argc, argv) int    argc; char   *argv[ ];
 
       sendType(sd1, PUT, strlen(arg)+1);  
       sendMsg(arg, sd1);
+      
+
+      char *curr_dir;
+      int i = getPwd(&curr_dir);
+      if(!i){
+
+        char str[strlen(curr_dir) + strlen(arg) + 1];
+        strcpy(str, curr_dir);
+        strcat(str, "/");
+        strcat(str, arg);
+        FILE* f = NULL;
+        f = fopen(str, "rb");
+        if(f != NULL){
+
+          fseek(f, 0, SEEK_END);
+          int size = ftell(f);
+          rewind(f);
+
+          printf("file len: %i\n", size);
+          
+
+          int nb_packets = size/PACKET_SIZE;
+
+          printf("nb_packets: %i\n", nb_packets);
+
+          sendType(sd1, GET_SIZE, nb_packets);
+          int j;
+          // sleep(2);
+          for(j = 0; j<nb_packets; j++){
+            unsigned char part[PACKET_SIZE];
+            int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+            write(sd1, part, PACKET_SIZE);
+            if(j%1==0){
+              printf("%i/%i\n", j, nb_packets);
+            }
+            //usleep(1000);
+            // printf("sended\n");
+            //sleep(2);
+          }
+
+          int last_size = size-nb_packets*PACKET_SIZE;
+          // printf("get last %i\n", GET_LAST);
+          sendType(sd1, GET_LAST, last_size);
+          printf("last_size: %i\n", last_size);
+          if(last_size != 0){
+            unsigned char part[last_size];
+            int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+
+            write(sd1, part, last_size);
+          } else {
+            // printf("get done\n");
+          }
+          //printf("part: %s", part);
+          fclose(f);
+        } else {
+          // printf("%s error\n", buffer);
+        }
+      }
+      printf("File sent: %s\n", arg);
       free(arg);
       /*
       Implement sending the file

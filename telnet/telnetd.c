@@ -177,7 +177,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               printf("file len: %i\n", size);
               
 
-              int nb_packets = size/GET_PACKET_SIZE;
+              int nb_packets = size/PACKET_SIZE;
 
               printf("nb_packets: %i\n", nb_packets);
 
@@ -185,22 +185,18 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               int j;
               // sleep(2);
               for(j = 0; j<nb_packets; j++){
-                unsigned char part[GET_PACKET_SIZE];
+                unsigned char part[PACKET_SIZE];
                 int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
-                write(sd2, part, GET_PACKET_SIZE);
+                write(sd2, part, PACKET_SIZE);
                 if(j%1==0){
                   printf("%i/%i\n", j, nb_packets);
                 }
-                usleep(1000);
+                //usleep(1000);
                 // printf("sended\n");
                 //sleep(2);
               }
 
-
-
-              sleep(5);
-
-              int last_size = size-nb_packets*GET_PACKET_SIZE;
+              int last_size = size-nb_packets*PACKET_SIZE;
               // printf("get last %i\n", GET_LAST);
               sendType(sd2, GET_LAST, last_size);
               printf("last_size: %i\n", last_size);
@@ -218,33 +214,67 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               // printf("%s error\n", buffer);
             }
           }
-
-
-          // FILE* dum = NULL;
-          // dum = fopen("dummy", "r");
-          // if(dum != NULL){
-          //   printf("dummy open\n");
-          //   close(dum);
-          // } else {
-          //   printf("dummy error\n");
-          // }
-
-          // FILE* dum2 = NULL;
-          // dum = fopen("dummy2", "r");
-          // if(dum2 != NULL){
-          //   printf("dummy2 open\n");
-          //   close(dum2);
-          // } else {
-          //   printf("dummy2 error\n");
-          // }
-          /*
-          TODO
-          Implement sending the file
-          */
           printf("File sent: %s\n", buffer);
         }
         else if (in_header.type == PUT){
           printf("put\n");
+
+          char buffer[in_header.length];
+          read(sd2, buffer, in_header.length);
+
+          printf("file: %s\n", buffer);
+
+          char *curr_dir;
+          int i = getPwd(&curr_dir);
+          if(!i){
+            char str[strlen(curr_dir) + strlen(buffer) + 1];
+            strcpy(str, curr_dir);
+            strcat(str, "/");
+            strcat(str, buffer);
+
+            FILE* f = NULL;
+            f = fopen(str, "wb");
+
+            msgHeader in_header;
+            read(sd2, &in_header, sizeof(msgHeader));
+            printf("nb of full packets: %i\n", in_header.length);
+
+            int j;
+
+            char received[PACKET_SIZE];
+            for(j = 0; j<in_header.length; j++){
+              
+              read(sd2, received, PACKET_SIZE);
+              // printf("got it\n");
+              fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
+              if(j%1==0){
+                printf("%i/%i\n", j, in_header.length);
+              }
+            }
+            printf("Packets received %i\n", j);
+
+            // printf("for done");
+            msgHeader end_header;
+            read(sd2, &end_header, sizeof(end_header));
+
+            if(end_header.type == GET_LAST){
+              if(end_header.length != 0){
+                // printf("last\n");
+                char last[end_header.length];
+                read(sd2, last, end_header.length);
+                fwrite(last, end_header.length, 1, f);
+                //printf("File received %s\n", last);
+              } else {
+                printf("Whole file received\n");
+              }
+            } else {
+              printf("bug\n");
+            }
+
+
+
+            fclose(f);
+          }
 
           /*
           TODO
