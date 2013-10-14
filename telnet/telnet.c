@@ -149,33 +149,45 @@ main(argc, argv) int    argc; char   *argv[ ];
         read(sd1, &in_header, sizeof(msgHeader));
         printf("nb of full packets: %i\n", in_header.length);
 
-        int i;
-        for(i = 0; i<in_header.length; i++){
-          char received[GET_PACKET_SIZE];
+        int j;
+
+        char received[GET_PACKET_SIZE];
+        for(j = 0; j<in_header.length; j++){
+          
           read(sd1, received, GET_PACKET_SIZE);
-          printf("got it\n");
-          fwrite(received, GET_PACKET_SIZE, 1, f);
+          // printf("got it\n");
+          fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
+          if(j%1==0){
+            printf("%i/%i\n", j, in_header.length);
+          }
         }
+        printf("Packets received %i\n", j);
 
-        read(sd1, &in_header, sizeof(msgHeader));
+        // printf("for done");
+        msgHeader end_header;
+        read(sd1, &end_header, sizeof(end_header));
 
-        if(in_header.type == GET_LAST){
-          if(in_header.length != 0){
-            printf("last\n");
-            char received[in_header.length];
-            read(sd1, received, in_header.length);
-            fwrite(received, in_header.length, 1, f);
+        if(end_header.type == GET_LAST){
+          if(end_header.length != 0){
+            // printf("last\n");
+            char last[end_header.length];
+            read(sd1, last, end_header.length);
+            fwrite(last, end_header.length, 1, f);
+            //printf("File received %s\n", last);
           } else {
-            printf("get done\n");
+            printf("Whole file received\n");
           }
         } else {
           printf("bug\n");
         }
 
+
+
         fclose(f);
       }
       close(arg);
       free(arg);
+
 
       /*
       Implement receiving the message

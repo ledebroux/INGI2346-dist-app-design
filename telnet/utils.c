@@ -177,6 +177,7 @@ int sendHeader(msgHeader* h, int s){
 }
 
 int sendType(int s, int type, int length) {
+  // printf("Type: %i\n", type);
   msgHeader h;
   h.length = length;
   h.type = type;
