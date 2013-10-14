@@ -150,6 +150,15 @@ main(argc, argv) int    argc; char   *argv[ ];
       }
       free(arg);
     }
+
+    /*
+     * Distant command ls : retrieve entries from current path for the environment of the server
+     * Send a header containg the type of the command, LS.
+     * The length field of the header contains 0, since there is no need 
+     * for the server to read something. The type LS is enough.
+     * The client waits for the response from the server : since the server writes every entries he found,
+     * the client read every entries until it reads end.
+     */
     else if(cmdcmp("ls", buffer)){
       printf("Distant command: ls\n");
 
