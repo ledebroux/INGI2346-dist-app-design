@@ -123,7 +123,8 @@ int sendType(int s, int type, int length) {
  *
  * s = -1 if local command, for client
  * s = the number of the socket descriptor if distant command, for server
- * if distant : write each entry of the directory specified by path on the socket
+ * if distant : write each entry of the directory specified by path on the socket, 
+ * and send end when there is no more entries
  * if local: just print the entry
  */
 int getLs(char* path, int s){
