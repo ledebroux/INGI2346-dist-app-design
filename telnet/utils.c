@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 
 
@@ -94,7 +95,7 @@ int getArg(char* cmd, char* str, char** arg_result){
  $ h is a of a msgHeader type, see in header.h for definition
  */
 int sendHeader(msgHeader* h, int s){
-  errno = 0
+  errno = 0;
   write(s, h, sizeof(h));
   return errno;
 }
@@ -106,8 +107,8 @@ int sendHeader(msgHeader* h, int s){
  */
 int sendType(int s, int type, int length) {
   msgHeader h;
-  h.length = length;
-  h.type = type;
+  h.length = htonl(length);
+  h.type = htonl(type);
   int result = sendHeader(&h, s);
   return result;
 }
@@ -138,7 +139,7 @@ int getLs(char* path, int s){
   {
     while((dent=readdir(dir))!=NULL) {
       if(s < 0) {
-        printf ("[%s]\n", dent->d_name);
+        printf ("%s\n", dent->d_name);
       } else {
         printf ("send[%s]\n", dent->d_name);
         write(s, dent->d_name, sizeof(dent->d_name));
