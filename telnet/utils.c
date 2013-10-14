@@ -58,6 +58,11 @@ int getLs(char* path, int s){
   Rajouter fonctionnalité pour chemon absolu + cd ..
 */
 int cd(char* dir, char** path){
+  // int ja;
+  // for(ja=0; ja<strlen(*path); ja++){
+  //   printf("tok%i: %i\n", ja, *path[ja]);
+  // }
+  // printf("getstr: %s\n", *path);
   char str[strlen(dir) + strlen(*path) + 1];
   strcpy(str, *path);
   strcat(str, "/");
@@ -88,4 +93,25 @@ int getPwd(char** pwd){
 	return -1;     
 }
 
+int getArg(char* cmd, char* str, char** arg_result){
+  int len = strlen(cmd);
+  int i=len;
+  while(str[i]==32){
+    i++;
+  }
+  char temp[strlen(str)];
+  int j;
+  for(j=0; j<strlen(str); j++){
+    if(str[j+i]!=0 && str[j+i]!=32 && str[j+i]!=10){
+      temp[j] = str[j+i];
+    } else {
+      break;
+    }
+  }
+  temp[j]=0;
+  //printf("temp: %s\n", temp);
+  *arg_result = temp;
+  // printf("targ: %s\n", *arg);
 
+  return 0;
+}
