@@ -138,6 +138,11 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             if(j==0){
               write(sd2, curr_dir, strlen(curr_dir)+1);
             }
+          }else{
+            int z = sendType(sd2, ERRNO_RET, i);
+            if (z!=0){
+              fprintf(stderr, "Error : %s\n",strerror(z));
+            }
           }
         } 
 
@@ -169,10 +174,6 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
 
           char * current;
           int i = getPwd(&current);
-<<<<<<< HEAD
-=======
-
->>>>>>> a0e5be1e2c26f54e895a7c5bf0accfbb2dde6f17
           int j = cd(buffer, &current);
           if(j == 0){
             write(sd2, "ok!", strlen("ok!")+1);
@@ -312,7 +313,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           break;
         }
         else {
-          printf("Error: shouldn't be reached")
+          printf("Error: shouldn't be reached");
         }
         printf("Waiting for command\n");
       }

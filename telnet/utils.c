@@ -94,7 +94,7 @@ int getArg(char* cmd, char* str, char** arg_result){
  $ h is a of a msgHeader type, see in header.h for definition
  */
 int sendHeader(msgHeader* h, int s){
-  errno = 0
+  errno = 0;
   write(s, h, sizeof(h));
   return errno;
 }
@@ -136,23 +136,33 @@ int getLs(char* path, int s){
   dir = opendir(path);
   if(dir!=NULL)
   {
+    int temp;
     while((dent=readdir(dir))!=NULL) {
       if(s < 0) {
         printf ("[%s]\n", dent->d_name);
       } else {
         printf ("send[%s]\n", dent->d_name);
+        errno = 0;
         write(s, dent->d_name, sizeof(dent->d_name));
+        if(errno != 0){
+          temp = errno;
+          break;
+        }
       }
     }
     if(s >= 0){
       char* end = "end";
+      errno = 0;
       write(s, end, sizeof(end));
+      errno = temp;
+      sendType(s, ERRNO_RET, errno);
     }
   } else {
-    printf("wrong path");
+    printf("Wrong Path");
   }
+  errno = 0;
   closedir(dir);
-  return 0;
+  return errno;
 }
 
 
@@ -208,6 +218,7 @@ int cd(char* dir, char** path){
  */
 int getPwd(char** pwd){
 	char temp[4096]; // 4096 is the MAX_PATH length, so it is logical to take that value
+  errno = 0;
 	if (getcwd(temp, sizeof(temp)) != NULL){
 		 int size = 0;
 		 int i;
@@ -220,7 +231,6 @@ int getPwd(char** pwd){
 		 temp2[i] = temp[i];
 		}
     *pwd = temp2;
-		return 0; 
 	}
-	return -1;     
+	return errno;     
 }

@@ -76,6 +76,8 @@ main(argc, argv) int    argc; char   *argv[ ];
       int i = getPwd(&curr_dir);
       if(!i){
         printf("%s\n", curr_dir);
+      } else {
+        fprintf(stderr, "Error : %s\n",strerror(i));
       }
     }
 
@@ -108,7 +110,14 @@ main(argc, argv) int    argc; char   *argv[ ];
       printf("Local command: ls\n"); 
       char *current;
       int i = getPwd(&current);
-      getLs(current, -1);
+      if (i==0){
+        int j = getLs(current, -1);
+        if(j!=0){
+          fprintf(stderr, "Error : %s\n",strerror(j));
+        }
+      } else {
+        fprintf(stderr, "Error : %s\n",strerror(i));
+      }
     }
 
     /*
@@ -122,8 +131,12 @@ main(argc, argv) int    argc; char   *argv[ ];
       printf("Distant command: pwd\n"); 
       sendType(sd1, PWD, 0);
       if(read(sd1, &in_header, sizeof(msgHeader))){
-        read(sd1, buffer, in_header.length);
-        printf("%s\n", buffer);
+        if(in_header.type == GET_SIZE){
+          read(sd1, buffer, in_header.length);
+          printf("%s\n", buffer);
+        }else{
+          fprintf(stderr, "Error : %s\n",strerror(in_header.length));
+        }
       }
     }
 
@@ -160,11 +173,14 @@ main(argc, argv) int    argc; char   *argv[ ];
      */
     else if(cmdcmp("ls", buffer)){
       printf("Distant command: ls\n");
-
       sendType(sd1, LS, 0);
       while(read(sd1, buffer, 256)){
         if(!strcmp(buffer, "end")){
           printf("end of ls\n");
+          read(sd1, &in_header, sizeof(msgHeader));
+          if(in_header.type == ERRNO_RET && in_header.length == 0){
+            fprintf(stderr, "Error : %s\n",strerror(in_header.type));
+          }
           break;
         }
         printf("ls : %s\n", buffer);
