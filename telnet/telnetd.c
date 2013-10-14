@@ -162,6 +162,11 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           Implement put, receive file and save it
           */
         }
+        else if (in_header.type == BYE){
+          printf("Farewell, my beloved friend !\n");
+          close(sd2);
+          break;
+        }
         else {
           char buffer[in_header.length];
           read(sd2, buffer, in_header.length);

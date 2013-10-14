@@ -38,7 +38,6 @@ int getLs(char* path, int s){
         printf ("[%s]\n", dent->d_name);
       } else {
         printf ("send[%s]\n", dent->d_name);
-        // printf("size: %lu\n", sizeof(dent->d_name));
         write(s, dent->d_name, sizeof(dent->d_name));
       }
     }
@@ -58,17 +57,12 @@ int getLs(char* path, int s){
   Rajouter fonctionnalité pour chemon absolu + cd ..
 */
 int cd(char* dir, char** path){
-  // int ja;
-  // for(ja=0; ja<strlen(*path); ja++){
-  //   printf("tok%i: %i\n", ja, *path[ja]);
-  // }
-  // printf("getstr: %s\n", *path);
   char str[strlen(dir) + strlen(*path) + 1];
   strcpy(str, *path);
   strcat(str, "/");
   strcat(str, dir);
   *path = str;
-  *path = replace_str(*path,"\n", ""); //Delete the /n at the end of the path
+  // *path = replace_str(*path,"\n", ""); //Delete the /n at the end of the path
   errno = 0;
   int i = chdir(*path);
   return errno;
@@ -110,7 +104,8 @@ int getArg(char* cmd, char* str, char** arg_result){
   }
   temp[j]=0;
   //printf("temp: %s\n", temp);
-  *arg_result = temp;
+  strcpy(*arg_result, temp);
+  //*arg_result = temp;
   // printf("targ: %s\n", *arg);
 
   return 0;

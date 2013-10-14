@@ -72,11 +72,13 @@ main(argc, argv) int    argc; char   *argv[ ];
       printf("Local command: cd\n"); 
       char * current;
       int i = getPwd(&current);
-      int j = cd(strtok(buffer,"lcd "), &current);
+      char* arg;
+      getArg("lcd", buffer, &arg);
+      // int j = cd(strtok(buffer,"lcd "), &current);
+      int j = cd(arg, &current);
       if (j!=0){
         fprintf(stderr, "Error : %s\n",strerror(j));
       }
-
     }
     // TODO Replace hard path by pwd path
 
@@ -105,7 +107,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       h.length = strlen(arg)+1;
       h.type = CD;
       sendHeader(&h, sd1);
-      getArg("cd", buffer, &arg);     
+      //getArg("cd", buffer, &arg);     
       sendMsg(arg, sd1);
       if(read(sd1, buffer, 6)){
         printf("%s\n", buffer);
@@ -127,7 +129,12 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(cmdcmp("bye", buffer)){
       printf("bye\n");
-      // sendMsg(ftok, sd1);
+      msgHeader h;
+      h.length = 0;
+      h.type = BYE; 
+      sendHeader(&h, sd1);
+      close(sd1);
+      break;
     }
     else if(cmdcmp("get", buffer)){
       printf("Distant command: get\n"); 
@@ -168,7 +175,7 @@ main(argc, argv) int    argc; char   *argv[ ];
 
 int sendMsg(char* msg, int s){
 
-  int ja;
+  // int ja;
   // for(ja=0; ja<strlen(msg); ja++){
   //   printf("tok%i: %i\n", ja, msg[ja]);
   // }
