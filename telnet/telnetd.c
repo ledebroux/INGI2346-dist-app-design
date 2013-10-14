@@ -168,22 +168,12 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             FILE* f = NULL;
             f = fopen(str, "rb");
             if(f != NULL){
-              // printf("%s open\n", str);
-
               fseek(f, 0, SEEK_END);
               int size = ftell(f);
               rewind(f);
-
-              printf("file len: %i\n", size);
-              
-
               int nb_packets = size/PACKET_SIZE;
-
-              printf("nb_packets: %i\n", nb_packets);
-
               sendType(sd2, GET_SIZE, nb_packets);
               int j;
-              // sleep(2);
               for(j = 0; j<nb_packets; j++){
                 unsigned char part[PACKET_SIZE];
                 int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
@@ -191,13 +181,8 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
                 if(j%1==0){
                   printf("%i/%i\n", j, nb_packets);
                 }
-                //usleep(1000);
-                // printf("sended\n");
-                //sleep(2);
               }
-
               int last_size = size-nb_packets*PACKET_SIZE;
-              // printf("get last %i\n", GET_LAST);
               sendType(sd2, GET_LAST, last_size);
               printf("last_size: %i\n", last_size);
               if(last_size != 0){
@@ -205,14 +190,9 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
                 int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
 
                 write(sd2, part, last_size);
-              } else {
-                // printf("get done\n");
-              }
-              //printf("part: %s", part);
+              } 
               fclose(f);
-            } else {
-              // printf("%s error\n", buffer);
-            }
+            } 
           }
           printf("File sent: %s\n", buffer);
         }
@@ -245,7 +225,6 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             for(j = 0; j<in_header.length; j++){
               
               read(sd2, received, PACKET_SIZE);
-              // printf("got it\n");
               fwrite(received, sizeof(received[0]), sizeof(received)/sizeof(received[0]), f);
               if(j%1==0){
                 printf("%i/%i\n", j, in_header.length);
@@ -253,33 +232,22 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             }
             printf("Packets received %i\n", j);
 
-            // printf("for done");
             msgHeader end_header;
             read(sd2, &end_header, sizeof(end_header));
 
             if(end_header.type == GET_LAST){
               if(end_header.length != 0){
-                // printf("last\n");
                 char last[end_header.length];
                 read(sd2, last, end_header.length);
                 fwrite(last, end_header.length, 1, f);
-                //printf("File received %s\n", last);
               } else {
                 printf("Whole file received\n");
               }
             } else {
               printf("bug\n");
             }
-
-
-
             fclose(f);
           }
-
-          /*
-          TODO
-          Implement put, receive file and save it
-          */
         }
         else if (in_header.type == BYE){
           printf("Farewell, my beloved friend !\n");
@@ -294,7 +262,6 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
         }
         printf("Waiting for command\n");
       }
-          /*child process */
       exit(0);
     }
     
