@@ -1,4 +1,11 @@
 /*
+ * Thibaut Knop & Lenoard Debroux
+ * INGI2146 - Mission 1
+ * header.h
+ */
+
+
+/*
 Each message sent by the client will be preceded by the sending of
 a header. That header contains the length and the type of the message to receive,
 Types are defined as follows

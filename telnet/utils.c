@@ -1,3 +1,10 @@
+/*
+ * Thibaut Knop & Lenoard Debroux
+ * INGI2146 - Mission 1
+ * utils.c
+ */
+
+
 #include "header.h"
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +16,11 @@
 #include <errno.h>
 
 
+
+
+//////////////////////////////////////////////////////////////////////////
+/////////////////////////// AUX FUNCTIONS ////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 /*
  * Replace a substring orig from str by a substring rep, if orig is in str.
  * Return a pointer to the new str.
@@ -40,14 +52,84 @@ int startsWith(const char *str, const char *pre){
 
 
 /*
- * 
+ * cmd represents the command type (cd, ls, lls, ...)
+ * str is the input from the stdin
+ * arg_result will contain the argument of the command.
+ * Ex: cd path/test   cmd = cd    str = cd path/test   arg_result = path/test
+ */
+int getArg(char* cmd, char* str, char** arg_result){
+  int len = strlen(cmd);
+  int i=len;
+  while(str[i]==32){
+    i++;
+  }
+  char temp[strlen(str)];
+  int j;
+  for(j=0; j<strlen(str); j++){
+    if(str[j+i]!=0 && str[j+i]!=32 && str[j+i]!=10){
+      temp[j] = str[j+i];
+    } else {
+      break;
+    }
+  }
+  temp[j]=0;
+  *arg_result = malloc(strlen(temp)+1);
+  strcpy(*arg_result, temp);
+  return 0;
+}
+
+/*
+ * Sugar for the sending of a message msg on the socket designated by its
+ * socket descriptor s 
+ */
+ int sendMsg(char* msg, int s){
+  write(s, msg, strlen(msg)+1);
+  return 0;
+}
+
+/*
+ * Sugar for the sending of a header h  on the socket designated by its
+ * socket descriptor s .
+ $ h is a of a msgHeader type, see in header.h for definition
+ */
+int sendHeader(msgHeader* h, int s){
+  write(s, h, sizeof(h));
+  return 0;
+}
+
+/*
+ * Sugar for defining a header and sending it on the socket designated
+ * by its socket descriptor s.
+ * type and length are the fields the structure msgHeader h.
+ */
+int sendType(int s, int type, int length) {
+  msgHeader h;
+  h.length = length;
+  h.type = type;
+  sendHeader(&h, s);
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+////////////////////////// CORE FUNCTIONS ////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+/*
+ * LS
+ *
+ * s = -1 if local command, for client
+ * s = the number of the socket descriptor if distant command, for server
+ * if distant : write each entry of the directory specified by path on the socket
+ * if local: just print the entry
  */
 int getLs(char* path, int s){
   DIR *dir;
   struct dirent *dent;
-  // char buffer[50];
-  // strcpy(buffer, args[1]);
-  dir = opendir(path);   //this part
+  dir = opendir(path);
   if(dir!=NULL)
   {
     while((dent=readdir(dir))!=NULL) {
@@ -71,8 +153,13 @@ int getLs(char* path, int s){
 
 
 /*
-  Rajouter fonctionnalité pour chemon absolu + cd .. + ~
-*/
+ * Change of Directory
+ * 
+ * path is a pointer to a string representing the current directory
+ * dir is the argument from the cd command
+ * if dir starts with ~, carry out the addition of the HOME path before the dir
+ * if dir starts with /, dir is an absolute path
+ */
 
 int cd(char* dir, char** path){
   if(startsWith(dir,"~") != 0){
@@ -112,8 +199,11 @@ int cd(char* dir, char** path){
   return errno;
 }
 
+/*
+ * Put the current directory in pwd 
+ */
 int getPwd(char** pwd){
-	char temp[4096]; 
+	char temp[4096]; // 4096 is the MAX_PATH length, so it is logical to take that value
 	if (getcwd(temp, sizeof(temp)) != NULL){
 		 int size = 0;
 		 int i;
@@ -129,57 +219,4 @@ int getPwd(char** pwd){
 		return 0; 
 	}
 	return -1;     
-}
-
-int getArg(char* cmd, char* str, char** arg_result){
-  int len = strlen(cmd);
-  int i=len;
-  while(str[i]==32){
-    i++;
-  }
-  char temp[strlen(str)];
-  int j;
-  for(j=0; j<strlen(str); j++){
-    if(str[j+i]!=0 && str[j+i]!=32 && str[j+i]!=10){
-      temp[j] = str[j+i];
-    } else {
-      break;
-    }
-  }
-  temp[j]=0;
-  *arg_result = malloc(strlen(temp)+1);
-  strcpy(*arg_result, temp); // <-- causes core dumped
-  //*arg_result = temp;
-  // printf("targ: %s\n", *arg);
-
-  return 0;
-}
-
-
-int sendMsg(char* msg, int s){
-
-  // int ja;
-  // for(ja=0; ja<strlen(msg); ja++){
-  //   printf("tok%i: %i\n", ja, msg[ja]);
-  // }
-  // printf("getstr: %s\n", msg);
-
-  // printf("msg: %s\n", msg);
-  // printf("msg len = %lu\n", strlen(msg));
-  write(s, msg, strlen(msg)+1);
-  return 0;
-}
-
-int sendHeader(msgHeader* h, int s){
-  printf("Header sent\n");
-  write(s, h, sizeof(h));
-  return 0;
-}
-
-int sendType(int s, int type, int length) {
-  // printf("Type: %i\n", type);
-  msgHeader h;
-  h.length = length;
-  h.type = type;
-  sendHeader(&h, s);
 }

@@ -1,3 +1,9 @@
+/*
+ * Thibaut Knop & Lenoard Debroux
+ * INGI2146 - Mission 1
+ * myftp.c
+ */
+
 #include "header.h"
 #include "utils.h"
 #include <sys/types.h>
@@ -11,7 +17,6 @@
 
 
 
-//int shrink(char*, char*);
 int getStringLength(char*, char);
 int fillString(char*, char*, int);
 int sendMsg(char*, int);
@@ -45,7 +50,12 @@ main(argc, argv) int    argc; char   *argv[ ];
     exit(-1);
   }
 
-  char buffer[256];
+  /*
+   * Normally the buffer should be 4096 long, since the MAX_PATH is 4096.
+   * However, for the purpose of this assignment, we think 512 is a good tradeoff
+   * between user possibility and performance.
+   */
+  char buffer[512];
 
   /*
   TODO: 
@@ -53,14 +63,19 @@ main(argc, argv) int    argc; char   *argv[ ];
   - if an arg is given when none is needed, do not send the header.
   */
 
+
   /*
-    TODO : fgets(buffer, 255, stdin) -> il faudrait plus que 255
-  */
+   * Compares the content of the buffer (filled from stdin)
+   * and performs the different operation
+   */
 
   while(strcmp(buffer, "bye")) {
     printf("Enter a command\n");
-    fgets(buffer,255,stdin);
+    fgets(buffer,512,stdin);
 
+    /*
+     * Local command pwd : retrieve the current directory and print in on sdtout 
+     */
     if(cmdcmp("lpwd", buffer)){
       printf("Local command: pwd\n");
       char *curr_dir;
@@ -69,6 +84,13 @@ main(argc, argv) int    argc; char   *argv[ ];
         printf("%s\n", curr_dir);
       }
     }
+
+    /*
+     * Local command cd : change the current directory
+     * Save first the current directory, 
+     * then retrieve the arg from the user input
+     * and pass thoses references to the cd method (from utils.c) 
+     */
     else if(cmdcmp("lcd", buffer)){
       printf("Local command: cd\n"); 
       char * current;
@@ -82,12 +104,29 @@ main(argc, argv) int    argc; char   *argv[ ];
       }
     }
 
+    /*
+     * Local command ls : retrieve entries from current path
+     * Save first the current directory, 
+     * and pass that reference to the ls method (from utils.c) 
+     * with s = -1 (local command)
+     */
     else if(cmdcmp("lls", buffer)){
       printf("Local command: ls\n"); 
       char *current;
       int i = getPwd(&current);
       getLs(current, -1);
     }
+
+    /*
+     * Distant command pwd : return the current path from the environment of the server
+     * Send a header containing the type of the message : PWD.
+     * The length field of the header contains 0, since there is no need 
+     * for the server to read something. The type PWD is enough.
+     * The client waits for the response from the server : since a path can be MAX_PATH long,
+     * and MAX_PATH is 4096, we read for 4096 bits.
+     */
+
+     // TODO : change 4096 : more usefull to send back a header that contains the length of the path to read
     else if(cmdcmp("pwd", buffer)){
       printf("Distant command: pwd\n"); 
       sendType(sd1, PWD, 0);
@@ -95,6 +134,17 @@ main(argc, argv) int    argc; char   *argv[ ];
         printf("%s\n", buffer);
       }
     }
+
+    /*
+     * Distant command cd : change the current directory of the environment of the server
+     * Retrieve the path from the user input,
+     * Send a header containing the type of the command CD, and the length of the path to be read
+     * The server will read the header, and then knows that he has to read a certain amount of bytes 
+     * (indicated by the length field in the header)
+     * Then send the arg to the server
+     * The client waits for the response from the server, receiving first a header from the server
+     * who announces the length the client has to read. 
+     */
     else if(cmdcmp("cd", buffer)){
       printf("Distant command: cd\n"); 
       char* arg;
