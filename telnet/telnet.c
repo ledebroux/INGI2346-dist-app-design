@@ -9,6 +9,8 @@
 //#define M2_ADDR "130.104.172.88"
 #define M2_ADDR "127.0.0.1"
 
+
+
 //int shrink(char*, char*);
 int getStringLength(char*, char);
 int fillString(char*, char*, int);
@@ -73,14 +75,12 @@ main(argc, argv) int    argc; char   *argv[ ];
       int i = getPwd(&current);
       char* arg;
       getArg("lcd", buffer, &arg);
-      // int j = cd(strtok(buffer,"lcd "), &current);
       int j = cd(arg, &current);
       free(arg);
       if (j!=0){
         fprintf(stderr, "Error : %s\n",strerror(j));
       }
     }
-    // TODO Replace hard path by pwd path
 
     else if(cmdcmp("lls", buffer)){
       printf("Local command: ls\n"); 
@@ -90,10 +90,7 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(cmdcmp("pwd", buffer)){
       printf("Distant command: pwd\n"); 
-      msgHeader h;
-      h.length = 0;
-      h.type = PWD;
-      sendHeader(&h, sd1);
+      sendType(sd1, PWD, 0);
       if(read(sd1, buffer, 4096)){
         printf("%s\n", buffer);
       }
@@ -103,11 +100,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       char* arg;
       getArg("cd", buffer, &arg);
 
-      msgHeader h;
-      h.length = strlen(arg)+1;
-      h.type = CD;
-      sendHeader(&h, sd1);
-      //getArg("cd", buffer, &arg);     
+      sendType(sd1, CD, strlen(arg)+1);
       sendMsg(arg, sd1);
       if(read(sd1, buffer, 6)){
         printf("%s\n", buffer);
@@ -116,10 +109,8 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(cmdcmp("ls", buffer)){
       printf("Distant command: ls\n");
-      msgHeader h;
-      h.length = 0;
-      h.type = LS; 
-      sendHeader(&h, sd1);
+
+      sendType(sd1, LS, 0);
       while(read(sd1, buffer, 256)){
         if(!strcmp(buffer, "end")){
           printf("end of ls\n");
@@ -130,10 +121,8 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
     else if(cmdcmp("bye", buffer)){
       printf("bye\n");
-      msgHeader h;
-      h.length = 0;
-      h.type = BYE; 
-      sendHeader(&h, sd1);
+
+      sendType(sd1, BYE, 0);
       close(sd1);
       break;
     }
@@ -142,19 +131,49 @@ main(argc, argv) int    argc; char   *argv[ ];
       char* arg;
       getArg("get", buffer, &arg);
 
-      msgHeader h;
-      h.length = strlen(arg)+1;
-      h.type = GET;
-      sendHeader(&h, sd1);
-      //getArg("get", buffer, &arg);     
+      sendType(sd1, GET, strlen(arg)+1);   
       sendMsg(arg, sd1);
-      FILE* f = NULL;
-      f = fopen(arg, "ab");
 
-      msgHeader in_header;
-      //read(sd1, &in_header, sizeof(msgHeader));
+      char *curr_dir;
+      int i = getPwd(&curr_dir);
+      if(!i){
+        char str[strlen(curr_dir) + strlen(arg) + 1];
+        strcpy(str, curr_dir);
+        strcat(str, "/");
+        strcat(str, arg);
 
+        FILE* f = NULL;
+        f = fopen(arg, "wb");
 
+        msgHeader in_header;
+        read(sd1, &in_header, sizeof(msgHeader));
+        printf("nb of full packets: %i\n", in_header.length);
+
+        int i;
+        for(i = 0; i<in_header.length; i++){
+          char received[GET_PACKET_SIZE];
+          read(sd1, received, GET_PACKET_SIZE);
+          printf("got it\n");
+          fwrite(received, GET_PACKET_SIZE, 1, f);
+        }
+
+        read(sd1, &in_header, sizeof(msgHeader));
+
+        if(in_header.type == GET_LAST){
+          if(in_header.length != 0){
+            printf("last\n");
+            char received[in_header.length];
+            read(sd1, received, in_header.length);
+            fwrite(received, in_header.length, 1, f);
+          } else {
+            printf("get done\n");
+          }
+        } else {
+          printf("bug\n");
+        }
+
+        fclose(f);
+      }
       close(arg);
       free(arg);
 
@@ -167,11 +186,7 @@ main(argc, argv) int    argc; char   *argv[ ];
       char* arg;
       getArg("put", buffer, &arg);
 
-      msgHeader h;
-      h.length = strlen(arg)+1;
-      h.type = PUT;
-      sendHeader(&h, sd1);
-      //getArg("put", buffer, &arg);   
+      sendType(sd1, PUT, strlen(arg)+1);  
       sendMsg(arg, sd1);
       free(arg);
       /*
@@ -183,26 +198,6 @@ main(argc, argv) int    argc; char   *argv[ ];
     }
    
   } 
-}
-
-int sendMsg(char* msg, int s){
-
-  // int ja;
-  // for(ja=0; ja<strlen(msg); ja++){
-  //   printf("tok%i: %i\n", ja, msg[ja]);
-  // }
-  // printf("getstr: %s\n", msg);
-
-  // printf("msg: %s\n", msg);
-  // printf("msg len = %lu\n", strlen(msg));
-  write(s, msg, strlen(msg)+1);
-  return 0;
-}
-
-int sendHeader(msgHeader* h, int s){
-  printf("Header sent\n");
-  write(s, h, sizeof(h));
-  return 0;
 }
 
 int getString(char* data, char** result, char sep){

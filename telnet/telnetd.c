@@ -168,13 +168,32 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
               int size = ftell(f);
               rewind(f);
 
-              printf("file len: %i", size);
+              printf("file len: %i\n", size);
 
+              int nb_packets = size/GET_PACKET_SIZE;
 
-              unsigned char part[512];
-              int n = fread(part, 512, 1, f);
+              sendType(sd2, GET_SIZE, nb_packets);
+              int j;
+              for(j = 0; j<nb_packets; j++){
+                unsigned char part[GET_PACKET_SIZE];
+                int n = fread(part, GET_PACKET_SIZE, 1, f);
+                write(sd2, part, strlen(part));
+                printf("sended\n");
+              }
+
+              int last_size = size-nb_packets*GET_PACKET_SIZE;
+              sendType(sd2, GET_LAST, last_size);
+              printf("last_size: %i", last_size);
+              if(last_size != 0){
+                unsigned char part[last_size];
+                int n = fread(part, last_size, 1, f);
+
+                write(sd2, part, strlen(part));
+              } else {
+                printf("get done\n");
+              }
               //printf("part: %s", part);
-              close(str);
+              fclose(f);
             } else {
               printf("%s error\n", buffer);
             }

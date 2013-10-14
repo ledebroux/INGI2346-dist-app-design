@@ -15,6 +15,7 @@ Types are defined as follows
 #define GET_SIZE 70
 #define GET_LAST 71
 #define TELNETD_PORT 8010
+#define GET_PACKET_SIZE 128
 
 struct msgHeader{
 	int length;

@@ -1,3 +1,4 @@
+#include "header.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -110,4 +111,32 @@ int getArg(char* cmd, char* str, char** arg_result){
   // printf("targ: %s\n", *arg);
 
   return 0;
+}
+
+
+int sendMsg(char* msg, int s){
+
+  // int ja;
+  // for(ja=0; ja<strlen(msg); ja++){
+  //   printf("tok%i: %i\n", ja, msg[ja]);
+  // }
+  // printf("getstr: %s\n", msg);
+
+  // printf("msg: %s\n", msg);
+  // printf("msg len = %lu\n", strlen(msg));
+  write(s, msg, strlen(msg)+1);
+  return 0;
+}
+
+int sendHeader(msgHeader* h, int s){
+  printf("Header sent\n");
+  write(s, h, sizeof(h));
+  return 0;
+}
+
+int sendType(int s, int type, int length) {
+  msgHeader h;
+  h.length = length;
+  h.type = type;
+  sendHeader(&h, s);
 }
