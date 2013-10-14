@@ -11,13 +11,15 @@
 
 int sigflag;
 
+int resquiescat(){wait();sigflag = 1;} /*called by SIGCHLD event handler*/
+
 main (argc, argv) int argc; char *argv[ ];
 {
   int sdw, sd2,clilen,childpid;
   struct sockaddr_in m1,m2;
 
   /* Prepare acknowledging child termination */
-  //sigset(SIGCHLD, resquiescat);
+  sigset(SIGCHLD, resquiescat);
 
 /*
 
@@ -162,42 +164,57 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
             FILE* f = NULL;
             f = fopen(str, "rb");
             if(f != NULL){
-              printf("%s open\n", str);
+              // printf("%s open\n", str);
 
               fseek(f, 0, SEEK_END);
               int size = ftell(f);
               rewind(f);
 
               printf("file len: %i\n", size);
+              
 
               int nb_packets = size/GET_PACKET_SIZE;
 
+              printf("nb_packets: %i\n", nb_packets);
+
               sendType(sd2, GET_SIZE, nb_packets);
               int j;
+              // sleep(2);
               for(j = 0; j<nb_packets; j++){
                 unsigned char part[GET_PACKET_SIZE];
-                int n = fread(part, GET_PACKET_SIZE, 1, f);
-                write(sd2, part, strlen(part));
-                printf("sended\n");
+                int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+                write(sd2, part, GET_PACKET_SIZE);
+                if(j%1==0){
+                  printf("%i/%i\n", j, nb_packets);
+                }
+                usleep(1000);
+                // printf("sended\n");
+                //sleep(2);
               }
 
+
+
+              sleep(5);
+
               int last_size = size-nb_packets*GET_PACKET_SIZE;
+              // printf("get last %i\n", GET_LAST);
               sendType(sd2, GET_LAST, last_size);
-              printf("last_size: %i", last_size);
+              printf("last_size: %i\n", last_size);
               if(last_size != 0){
                 unsigned char part[last_size];
-                int n = fread(part, last_size, 1, f);
+                int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
 
-                write(sd2, part, strlen(part));
+                write(sd2, part, last_size);
               } else {
-                printf("get done\n");
+                // printf("get done\n");
               }
               //printf("part: %s", part);
               fclose(f);
             } else {
-              printf("%s error\n", buffer);
+              // printf("%s error\n", buffer);
             }
           }
+
 
           // FILE* dum = NULL;
           // dum = fopen("dummy", "r");
@@ -220,7 +237,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
           TODO
           Implement sending the file
           */
-          printf("get file: %s\n", buffer);
+          printf("File sent: %s\n", buffer);
         }
         else if (in_header.type == PUT){
           printf("put\n");
@@ -257,7 +274,7 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
 
 */
 
-//int resquiescat(){wait();sigflag = 1;} /*called by SIGCHLD event handler*/
+
 
 /*
 
