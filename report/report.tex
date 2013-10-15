@@ -94,6 +94,7 @@ For the distant \verb@LS@ command, we had different way to return the entries fr
 We chose the second solution more because we hadn't thought to the first one! If we had a little more time, we would probably change for the first solution : it is probably best to avoid to send to much small packets when it is not required.
 
 \subsection{How to transfer a binary file of length unknown a priori}
+\label{put_get}
 This topic refers directly to the usage of \verb@GET@ and \verb@PUT@. As the behaviour of the two commands is very similar as they basically perform the same action except from the direction of the information, we'll describe the behavior of \verb@PUT@ only. \\
 The steps that are in emphasis are the one that allow us to send unknown length data.\\
 
@@ -129,7 +130,8 @@ Out of Band data could be used in this project to implement a channel to send pr
 \subsection{Protocols implementing the various functions}
 We'll describe here how we implemented the different commands.
 \begin{itemize}
-
+    \item \verb@ls, pwd, cd@ - Those are implemented almost the same way. As explained above, a header is sent and depending on the presence of an argument, a packet is sent to give the argument. The reply is than sent back to the server.
+    \item \verb@get, put@ - Those protocols are implemented the same way, except that the direction client-server changes from one to the other. The detail of the protocol is given in the section \ref{put_get}.
 \end{itemize}
 \subsection{User guides of the client and server}
 \subsection{The source code directory and instruction for building the executable files}
