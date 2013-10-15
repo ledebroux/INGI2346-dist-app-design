@@ -139,15 +139,15 @@ We'll describe here how we implemented the different commands.
 \item[Server] The only command you can perform for the server is to run it by launching \verb@./myftpd@. All the commands and responses the server will perform are sent from and to the client.
 \item[Client] As specified in the functional description of the application, the client is launch by running \verb@./myftp@ in the right corresponding directory (see next Subsection). The commands available are :
 \begin{itemize}
-\item \verb@pwd@: Display the current directory (of the environment) of the server.
-\item \verb@lpwd@: Display the current directory (of the environment) of the client.
+\item \verb@pwd@: Display the current directory (of the environment) of the server
+\item \verb@lpwd@: Display the current directory (of the environment) of the client
 \item \verb@cd dir@: Change the current directory of the server into \verb@dir@. Not that the usage of relative and absolute paths, as well as \verb@~@ paths  are accepted.
 \item \verb@lcd dir@: Change the current directory of the client into \verb@dir@. Not that the usage of relative and absolute paths, as well as \verb@~@ paths  are accepted.
 \item \verb@ls@: Display the contents of the current directory of the server.
 \item \verb@lls@: Display the contents of the current directory of the client.
 \item \verb@get file@: The file \verb@file@ is copied from the current directory of the server towards the current directory of the client.
 \item \verb@put file@: The file \verb@file@ is copied from the current directory of the client towards the current directory of the server.
-\item \verb@bye@: Close the file transfer session.
+\item \verb@bye@: Close the file transfer session
 \end{itemize}
 \end{description}
 \subsection{The source code directory and instruction for building the executable files}
