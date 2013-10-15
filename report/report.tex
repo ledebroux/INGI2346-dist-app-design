@@ -12,7 +12,7 @@
         {\huge LINGI2346 - Distributed application design}\\
         \vspace{0.4cm}
         
-        {\Large {Professeur : Marc Lobelle}}\\
+        {\Large {Teacher : Marc Lobelle}}\\
         \vspace{0.6cm}
         
         {\Large \textit{Problem 1: Sockets}}\\
@@ -44,7 +44,7 @@
 
 %Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
 
-\section{Architecture}
+\section{Discussion}
 In this section, we'll discuss about the different choices we've made regarding the implementation of a transfer protocol.
 
 \subsection{Protocol choice}
@@ -79,7 +79,16 @@ Server-side, upon the reception of a header, depending on the type of command, e
 Note that a special type for the header is \verb@ERRNO_RET@ and is used by the server to return some information about a failure to the client.
 
 \subsection{How to transfer textual data of unspecified length from the client to the server or from the server to the client}
-As specified above, the use of a header allows the server (reap. the client) to read the exact right number of bytes specified in the header. More precisely, the server expects to receive headers, specifying the command to run.
+
+As specified above, the use of a header allows the server (resp. the client) to read the exact right number of bytes specified in the header. More precisely, the server expects to receive headers, specifying the command to run. In the case of the \verb@PWD@ and \verb@LS@ commands, the server don't have to receive any other arguments from the clients. It executes directly the corresponding command and return the result to the client. In the other cases, the server read exactly the number of bytes specified in the header.\\
+
+For the distant \verb@LS@ command, we had different way to return the entries from the current directory to the client : 
+\begin{itemize}
+\item Concatenate all the entries into 1 single string of a specified length, typically a multiple of MSS (see next subsection), and precede this sending by a header containing the length of the string that contains the entries. However, if the concatenation of all entries into one string have a length superior to the specified length, the server has to cut the string into 2 packets to be sent, which can cause more complexity with the headers.
+\item Send back every entries on the socket to the client, until a last packet containing the char \verb@\n@ is read by the client (the char \verb@\n@ cannot be contained in files name). The last therefore knows that it doesn't have to wait for other entries anymore. Each entries is sent into a 256 bits initialized string, which allows the client to knows how much bytes it have to read at each time. The value of 256 bits actually corresponds to the maximum filename length, \verb@NAME_MAX@, defined in \verb@limits.h@.
+\end{itemize}
+
+We chose the second solution more because we hadn't thought to the first one! If we had a little more time, we would probably change for the first solution : it is probably best to avoid to send to much small packets when it is not required.
 
 \subsection{How to transfer a binary file of length unknown a priori}
 This topic refers directly to the usage of \verb@GET@ and \verb@PUT@. As the behaviour of the two commands is very similar as they basically perform the same action except from the direction of the information, we'll describe the behavior of \verb@PUT@ only. \\
@@ -92,7 +101,7 @@ The actions performed by the client are the following:
     \item header sent to tell the number of full size packets to be sent;
     \item loop sending full size packets;
     \item header informing of the length of the last packet sent;
-    \item message cosntaining the last packet.
+    \item message containing the last packet.\\
 \end{itemize}
 
 The actions performed by the server are the following:
@@ -106,8 +115,22 @@ The actions performed by the server are the following:
     \item receive the last packet of the file
 \end{itemize}
 
-The size for the packets is set at 1072 as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
+The size for the packets is set at 1072 bytes as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
 
+\subsection{Can one do something useful with the OOB data within the framework of this problem ?}
 
+\section{Presentation}
+\subsection{Protocols implementing the various functions}
+\subsection{User guides of the client and server}
+\subsection{The source code directory and instruction for building the executable files}
+\begin{itemize}
+\item \verb@header.h@:
+\item \verb@utils.c@:
+\item \verb@myftp.c@:
+\item \verb@myftpd.c@:
+\item \verb@Makefile@:
+
+\end{itemize}
+\subsection{Commented listings of the programs}
 \end{document}
 
