@@ -30,22 +30,46 @@
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 
-\lstset{
-language=C,
-breakatwhitespace=true,
-breaklines=true,
-keepspaces=true,
-numbers=left,
-keywordstyle=\bfseries\ttfamily\textcolor{codeBlue},
-stringstyle=\ttfamily\textcolor{red},
-commentstyle=\ttfamily\textcolor{codeGreen},
-numbersep=5pt,
-stepnumber=5,
-numberstyle=\ttfamily\tiny,
-showstringspaces=false,
-frame=single,
-basicstyle=\footnotesize,
-title=\ttfamily\large\lstname
+%\lstset{
+%    language=C,
+%breakatwhitespace=true,
+%breaklines=true,
+%keepspaces=true,
+%numbers=left,
+%keywordstyle=\bfseries\ttfamily\textcolor{codeBlue},
+%stringstyle=\ttfamily\textcolor{red},
+%commentstyle=\ttfamily\textcolor{codeGreen},
+%numbersep=5pt,
+%stepnumber=5,
+%numberstyle=\ttfamily\tiny,
+%showstringspaces=false,
+%frame=single,
+%basicstyle=\footnotesize,
+%title=\ttfamily\large\lstname
+%}
+
+\lstset{tabsize=4,
+        basicstyle=\footnotesize,
+        %upquote=true,
+        aboveskip={1.5\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+		frame=single,
+		numbers=left,
+		numberstyle=\tiny\color{black},
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0.5,0,0.35}\bfseries,
+        commentstyle=\color[rgb]{0.25,0.5,0.35},
+        stringstyle=\color[rgb]{0.6,0,0},
+        morecomment=[s][\color[rgb]{0.25,0.35,0.75}]{/**}{*/},
+	language=C,
+	title=\ttfamily\large\lstname
 }
 
 \makeatletter
@@ -96,29 +120,6 @@ title=\ttfamily\large\lstname
 \def\blurb#1{\def\@blurb{#1}}
 \date{\today}
 \makeatother
-
-\lstset{tabsize=4,
-        basicstyle=\scriptsize,
-        %upquote=true,
-        aboveskip={1.5\baselineskip},
-        columns=fixed,
-        showstringspaces=false,
-        extendedchars=true,
-        breaklines=true,
-        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
-		frame=single,
-		numbers=left,
-		numberstyle=\tiny\color{black},
-        showtabs=false,
-        showspaces=false,
-        showstringspaces=false,
-        identifierstyle=\ttfamily,
-        keywordstyle=\color[rgb]{0.5,0,0.35}\bfseries,
-        commentstyle=\color[rgb]{0.25,0.5,0.35},
-        stringstyle=\color[rgb]{0.6,0,0},
-        morecomment=[s][\color[rgb]{0.25,0.35,0.75}]{/**}{*/},
-	language=Python
-}
 
 %opening
 \title{LINGI2346 - Distributed application design \\
