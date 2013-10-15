@@ -129,7 +129,7 @@ Out of Band data could be used in this project to implement a channel to send pr
 \subsection{Protocols implementing the various functions}
 We'll describe here how we implemented the different commands.
 \begin{itemize}
-
+\item
 \end{itemize}
 \subsection{User guides of the client and server}
 \begin{description}
@@ -161,8 +161,13 @@ In order to build the executable files, all is needed is to run the \verb@Makefi
 
 To run the client and the server, just run \verb@./myftp@ and \verb@./myftpd@ respectively, by starting the server first.
 \subsection{Commented listings of the programs}
-\begin{framed}
-\lstinputlisting{../telnet/myftp.c}
-\end{framed}
+ \subsubsection{Client specific code}~
+    \lstinputlisting{../myftp/myftp.c}
+    \subsubsection{Server specific code}~
+    \lstinputlisting{../myftp/myftpd.c}
+    \subsubsection{../Shared code}~
+    \lstinputlisting{../myftp/utils.c}
+    \lstinputlisting{../myftp/header.h}
+    \lstinputlisting{../myftp/utils.h}
 \end{document}
 

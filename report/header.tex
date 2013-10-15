@@ -30,15 +30,23 @@
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 
-\lstset{numbers=left, tabsize=4, backgroundcolor=\color{gris},
-frame=single, breaklines=true,
-keywordstyle=\color{blue},
-commentstyle=\color{mygreen},    % comment style
-numberstyle=\footnotesize\color{black}, % the style that is used for the line-numbers
-stringstyle=\color{mymauve},     % string literal style
-stringstyle=\ttfamily,
-framexleftmargin=6mm, xleftmargin=6mm,
-language=C}
+\lstset{
+    language=C,
+breakatwhitespace=true,
+breaklines=true,
+keepspaces=true,
+numbers=left,
+keywordstyle=\bfseries\ttfamily\textcolor{codeBlue},
+stringstyle=\ttfamily\textcolor{red},
+commentstyle=\ttfamily\textcolor{codeGreen},
+numbersep=5pt,
+stepnumber=5,
+numberstyle=\ttfamily\tiny,
+showstringspaces=false,
+frame=single,
+basicstyle=\footnotesize,
+title=\ttfamily\large\lstname
+}
 
 \makeatletter
 \def\clap#1{\hbox to 0pt{\hss #1\hss}}%
