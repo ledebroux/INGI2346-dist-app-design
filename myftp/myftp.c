@@ -38,22 +38,15 @@ main(argc, argv) int    argc; char   *argv[ ];
   int sd1;
   struct sockaddr_in     m2;
 
-  /* fill in the structure "m2" with the address of the
-   * server that we want to connect with */
-
   bzero((char *) &m2       , sizeof(m2));
   m2.sin_family     = AF_INET;
   m2.sin_addr.s_addr = inet_addr(addr);
   m2.sin_port       = htons(TELNETD_PORT);
 
-  /* Open a TCP socket (an Internet stream socket)*/
-
   if ( (sd1 = socket(PF_INET, SOCK_STREAM, 0)) < 0){
     perror("socket error in telnet");
     exit(-1);
   }
-
-  /* Connect to the server */
 
   if (connect(sd1 , (struct sockaddr *) &m2 , sizeof ( m2 )) < 0){
     perror("connect error in telnet");
@@ -349,9 +342,7 @@ main(argc, argv) int    argc; char   *argv[ ];
 }
 
 int getString(char* data, char** result, char sep){
-  // printf("data: %s\n", data);
   int i = getStringLength(data, sep);
-  // printf("len: %i\n", i);
   char str[i+1];
   int j;
   for(j=0; j<i+1; j++){
@@ -362,7 +353,6 @@ int getString(char* data, char** result, char sep){
       str[j] = data[j]; 
     }
   }
-  // printf("getstr: %s\n", str);
   *result = str;
   return 0;
 }
