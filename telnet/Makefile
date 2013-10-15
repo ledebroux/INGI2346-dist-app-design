@@ -1,7 +1,7 @@
-TELNET : telnet.o telnetd.o
+MYFTP : myftp myftpd
 
-telnet.o : telnet.c utils.c
-	gcc utils.c telnet.c -o telnet.o
+myftp : myftp.c utils.c header.h
+	gcc utils.c myftp.c -o myftp
 
-telnetd.o : telnetd.c utils.c
-	gcc utils.c telnetd.c -o telnetd.o
+myftpd : myftpd.c utils.c header.h
+	gcc utils.c myftpd.c -o myftpd

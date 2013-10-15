@@ -1,5 +1,6 @@
 /*
  * Thibaut Knop & Lenoard Debroux
+ * Group 24
  * INGI2146 - Mission 1
  * utils.c
  */
@@ -15,7 +16,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <arpa/inet.h>
-
 
 
 
