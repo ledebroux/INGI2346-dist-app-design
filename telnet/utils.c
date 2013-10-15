@@ -152,7 +152,9 @@ int getLs(char* path, int s){
       }
     }
     if(s >= 0){
-      char* end = "end";
+      char end[256];
+      end[0] = 10;
+      end[1] = 0;
       errno = 0;
       write(s, end, 256);
       errno = temp;

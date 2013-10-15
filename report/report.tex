@@ -77,9 +77,35 @@ Server-side, upon the reception of a header, depending on the type of command, e
 
 Note that a special type for the header is \verb@ERRNO_RET@ and is used by the server to return some information about a failure to the client.
 
-\subsection{how to transfer textual data of unspecified length from the client to the server or from the server to the client}
+\subsection{How to transfer textual data of unspecified length from the client to the server or from the server to the client}
 As specified above, the use of a header allows the server (reap. the client) to read the exact right number of bytes specified in the header. More precisely, the server expects to receive headers, specifying the command to run.
 
+\subsection{How to transfer a binary file of length unknown a priori}
+This topic refers directly to the usage of \verb@GET@ and \verb@PUT@. As the behaviour of the two commands is very similar as they basically perform the same action except from the direction of the information, we'll describe the behavior of \verb@PUT@ only. \\
+
+The actions performed by the client are the following:
+\begin{itemize}
+    \item header sent to inform of the command and of the length of the filename;
+    \item message sent to give the filename;
+    \item file is opened in binary read mode;
+    \item header sent to tell the number of full size packets to be sent;
+    \item loop sending full size packets;
+    \item header informing of the length of the last packet sent;
+    \item message cosntaining the last packet.
+\end{itemize}
+
+The actions performed by the server are the following:
+\begin{itemize}
+    \item recognize the command to execute;
+    \item receive the filename;
+    \item receive the number of full size packets to be received;
+    \item create/open a file in binary write mode with the right filename;
+    \item loop to receive the full size packets
+    \item receive a header informing of the length of the last packet to receive
+    \item receive the last packet of the file
+\end{itemize}
+
+The size for the packets is set at 1072 as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
 
 
 \end{document}

@@ -21,7 +21,6 @@
 /* TODO :
 - rename files
 - add ipaddress as arg
-- when cd, what to do with ok or fail
 
 */
 
@@ -187,7 +186,8 @@ main(argc, argv) int    argc; char   *argv[ ];
       // printf("Distant command: ls\n");
       sendType(sd1, LS, 0);
       while(read(sd1, buffer, 256)){
-        if(!strcmp(buffer, "end")){
+        // if(!strcmp(buffer, "end")){
+        if(buffer[0] == 10){
           // printf("end of ls\n");
           read(sd1, &in_header, sizeof(msgHeader));
           if(ntohl(in_header.type) == ERRNO_RET && ntohl(in_header.length) != 0){
