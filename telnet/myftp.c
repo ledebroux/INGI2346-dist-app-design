@@ -216,7 +216,6 @@ main(argc, argv) int    argc; char   *argv[ ];
      * then, the last packet is received.
      */
     else if(cmdcmp("get", buffer)){
-      printf("Distant command: get\n"); 
       char* arg;
       getArg("get", buffer, &arg);
       if(strlen(arg) > 0){
@@ -350,9 +349,9 @@ main(argc, argv) int    argc; char   *argv[ ];
 }
 
 int getString(char* data, char** result, char sep){
-  printf("data: %s\n", data);
+  // printf("data: %s\n", data);
   int i = getStringLength(data, sep);
-  printf("len: %i\n", i);
+  // printf("len: %i\n", i);
   char str[i+1];
   int j;
   for(j=0; j<i+1; j++){
@@ -363,23 +362,16 @@ int getString(char* data, char** result, char sep){
       str[j] = data[j]; 
     }
   }
-  printf("getstr: %s\n", str);
+  // printf("getstr: %s\n", str);
   *result = str;
   return 0;
 }
 
 int getStringLength(char* str, char sep){
-  int ja;
-  for(ja=0; ja<strlen(str); ja++){
-    printf("tok%i: %i\n", ja, str[ja]);
-  }
-  printf("getstr: %s\n", str);
-
   int i=0;
   while(str[i] != sep){
     i++;
   }
-  // i++;
   return i;
 }
 

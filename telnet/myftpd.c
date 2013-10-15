@@ -290,15 +290,12 @@ Puisque le processus père passe la plupart de son temps dans l'appel système a
                   char last[elen];
                   read(sd2, last, elen);
                   fwrite(last, sizeof(last[0]), sizeof(last)/sizeof(last[0]), f);
-                } else {
-                  
                 }
                 printf("File received: %s\n", buffer);
-              } else {
-                printf("bug\n");
               }
               fclose(f);
             } else {
+              printf("Error: shouldn't be reached");
             }
           }
         }
