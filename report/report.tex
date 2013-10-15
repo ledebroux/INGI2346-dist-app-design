@@ -44,7 +44,7 @@
 
 %Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
 
-\section{Architecture}
+\section{Discussion}
 In this section, we'll discuss about the different choices we've made regarding the implementation of a transfer protocol.
 
 \subsection{Protocol choice}
@@ -101,7 +101,7 @@ The actions performed by the client are the following:
     \item header sent to tell the number of full size packets to be sent;
     \item loop sending full size packets;
     \item header informing of the length of the last packet sent;
-    \item message cosntaining the last packet.
+    \item message containing the last packet.\\
 \end{itemize}
 
 The actions performed by the server are the following:
@@ -115,8 +115,22 @@ The actions performed by the server are the following:
     \item receive the last packet of the file
 \end{itemize}
 
-The size for the packets is set at 1072 as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
+The size for the packets is set at 1072 bytes as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
 
+\subsection{Can one do something useful with the OOB data within the framework of this problem ?}
 
+\section{Presentation}
+\subsection{Protocols implementing the various functions}
+\subsection{User guides of the client and server}
+\subsection{The source code directory and instruction for building the executable files}
+\begin{itemize}
+\item \verb@header.h@:
+\item \verb@utils.c@:
+\item \verb@myftp.c@:
+\item \verb@myftpd.c@:
+\item \verb@Makefile@:
+
+\end{itemize}
+\subsection{Commented listings of the programs}
 \end{document}
 
