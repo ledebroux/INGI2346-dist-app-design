@@ -104,6 +104,13 @@ int sendHeader(msgHeader* h, int s){
  * Sugar for defining a header and sending it on the socket designated
  * by its socket descriptor s.
  * type and length are the fields the structure msgHeader h.
+ *
+ * To avoid any errors due to the endianness used by the operating system
+ * we convert the int in the structure msgHeader from the host layer to the 
+ * network layer thanks to the function htonl()
+ * Upon receiving a header, the inverse conversion must be done, thanks
+ * to ntohl().
+ * It is done in myftp.c and myftpd.c
  */
 int sendType(int s, int type, int length) {
   msgHeader h;
