@@ -134,18 +134,37 @@ We'll describe here how we implemented the different commands.
     \item \verb@get, put@ - Those protocols are implemented the same way, except that the direction client-server changes from one to the other. The detail of the protocol is given in the section \ref{put_get}.
 \end{itemize}
 \subsection{User guides of the client and server}
+\begin{description}
+\item[Server] The only command you can perform for the server is to run it by launching \verb@./myftpd@. All the commands and responses the server will perform are sent from and to the client.
+\item[Client] As specified in the functional description of the application, the client is launch by running \verb@./myftp@ in the right corresponding directory (see next Subsection). The commands available are :
+\begin{itemize}
+\item \verb@pwd@: Display the current directory (of the environment) of the server
+\item \verb@lpwd@: Display the current directory (of the environment) of the client
+\item \verb@cd dir@: Change the current directory of the server into \verb@dir@. Not that the usage of relative and absolute paths, as well as \verb@~@ paths  are accepted.
+\item \verb@lcd dir@: Change the current directory of the client into \verb@dir@. Not that the usage of relative and absolute paths, as well as \verb@~@ paths  are accepted.
+\item \verb@ls@: Display the contents of the current directory of the server.
+\item \verb@lls@: Display the contents of the current directory of the client.
+\item \verb@get file@: The file \verb@file@ is copied from the current directory of the server towards the current directory of the client.
+\item \verb@put file@: The file \verb@file@ is copied from the current directory of the client towards the current directory of the server.
+\item \verb@bye@: Close the file transfer session
+\end{itemize}
+\end{description}
 \subsection{The source code directory and instruction for building the executable files}
-The directory containing the source codes is named \verb@Mission2-Group24@.  It contains the following files : 
+The directory containing the source codes is named \verb@Mission2-Group24@.  \\
+It contains the following files : 
 \begin{itemize}
 \item \verb@header.h@: contains the typedef declaration of the structure \verb@msgHeader@, as well as the type of possible message, encoded as a \verb@int@.
 \item \verb@utils.c@: contains a set of methods which are useful for both client and server. All the methods are designed to be used and called either by the client and the server. Note that the method \verb@sendType@, we do not forget to call \verb@htonl@ to format the \verb@int@ variables from the \textit{host} layer to the \textit{network} layer.
-\item \verb@myftp.c@:
-\item \verb@myftpd.c@:
+\item \verb@myftp.c@: contains the code for the client. It works as telnet and has a similar architecture code.
+\item \verb@myftpd.c@: contains the code for the server. It works as telnetd and has a similar architecture code.
 \item \verb@Makefile@: Automate the compilation and the linkage of the .c sources to produce executable files, \verb@myftp@ and \verb@myftpd@ respectively.
 \end{itemize}
 In order to build the executable files, all is needed is to run the \verb@Makefile@ by running the \verb@make@ command in the current directory (\verb@Mission2-Group24@).\\
 
 To run the client and the server, just run \verb@./myftp@ and \verb@./myftpd@ respectively, by starting the server first.
 \subsection{Commented listings of the programs}
+\begin{framed}
+\lstinputlisting{../telnet/myftp.c}
+\end{framed}
 \end{document}
 
