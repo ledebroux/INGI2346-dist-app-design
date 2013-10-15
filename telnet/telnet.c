@@ -21,7 +21,8 @@
 /* TODO :
 - rename files
 - add ipaddress as arg
-
+- add authors in files (+groups)
+- remove prints
 */
 
 
