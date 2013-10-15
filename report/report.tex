@@ -74,6 +74,9 @@ You can find the different possible values for the type in \verb@header.h@
 
 When a command enters client-side, the command is parsed to identify which one it is, and then, a header is sent accordingly. If the command is supposed to be followed by an argument, the argument is retrieved and sent to the server.\\
 
+To cope with the endianness of the different systems architectures, we have to serialize some of our data before sending it through the channel. As it is only in the header that we use \verb@uint32_t@ instead of \verb@char@ everywhere else, we only need to serialize those variables.\\
+This is done by calling the function \verb@htonl()@ on the varibles. We send the result of this conversion in our header to the other part. Upon reception of a header, the variable must be deserialize to be readable on the system. The funtion call to do so \verb@ntohl()@.\\
+
 Server-side, upon the reception of a header, depending on the type of command, either it is executed and the result is sent back, or the server waits to receive an argument, and then, upon reception, executes the command. If the commands is such that the client is waiting for a response, the same mechanism as above is used : the server send a header to the client, containing a special type (either \verb@GET_SIZE@ or \verb@ERRNO_RET@). Then the client know how much bytes have to been read on the socket.\\
 
 Note that a special type for the header is \verb@ERRNO_RET@ and is used by the server to return some information about a failure to the client.
@@ -92,35 +95,42 @@ We chose the second solution more because we hadn't thought to the first one! If
 
 \subsection{How to transfer a binary file of length unknown a priori}
 This topic refers directly to the usage of \verb@GET@ and \verb@PUT@. As the behaviour of the two commands is very similar as they basically perform the same action except from the direction of the information, we'll describe the behavior of \verb@PUT@ only. \\
+The steps that are in emphasis are the one that allow us to send unknown length data.\\
 
 The actions performed by the client are the following:
-\begin{itemize}
-    \item header sent to inform of the command and of the length of the filename;
+\begin{itemize}[noitemsep]
+    \item \emph{header sent to inform of the command and of the length of the filename};
     \item message sent to give the filename;
     \item file is opened in binary read mode;
-    \item header sent to tell the number of full size packets to be sent;
+    \item \emph{header sent to tell the number of full size packets to be sent};
     \item loop sending full size packets;
-    \item header informing of the length of the last packet sent;
+    \item \emph{header informing of the length of the last packet sent};
     \item message containing the last packet.\\
 \end{itemize}
 
 The actions performed by the server are the following:
-\begin{itemize}
+\begin{itemize}[noitemsep]
     \item recognize the command to execute;
     \item receive the filename;
-    \item receive the number of full size packets to be received;
+    \item \emph{receive the number of full size packets to be received};
     \item create/open a file in binary write mode with the right filename;
-    \item loop to receive the full size packets
-    \item receive a header informing of the length of the last packet to receive
-    \item receive the last packet of the file
+    \item loop to receive the full size packets;
+    \item \emph{receive a header informing of the length of the last packet to receive};
+    \item receive the last packet of the file.\\
 \end{itemize}
 
 The size for the packets is set at 1072 bytes as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
 
 \subsection{Can one do something useful with the OOB data within the framework of this problem ?}
 
+Out of Band data could be used in this project to implement a channel to send prioritary messages. Those messages could be, for instances, control messages. If one wanted to interrupt a file transfert, that could be done by sending a messages saying so on that channel.
+
 \section{Presentation}
 \subsection{Protocols implementing the various functions}
+We'll describe here how we implemented the different commands.
+\begin{itemize}
+
+\end{itemize}
 \subsection{User guides of the client and server}
 \subsection{The source code directory and instruction for building the executable files}
 The directory containing the source codes is named \verb@Mission2-Group24@.  It contains the following files : 
