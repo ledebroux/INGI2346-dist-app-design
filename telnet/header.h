@@ -24,7 +24,7 @@ Types are defined as follows
 #define GET_LAST 71
 #define ERRNO_RET 10
 #define TELNETD_PORT 8010
-#define PACKET_SIZE 1024
+#define PACKET_SIZE 1072
 
 struct msgHeader{
 	uint32_t length;
