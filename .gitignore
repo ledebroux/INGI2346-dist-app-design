@@ -4,3 +4,9 @@
 *.log
 *.pdf
 *.fdb_latexmk
+client
+server
+rpspec.h
+*_clnt.c
+*_svc.c
+*_xdr.c
