@@ -1,0 +1,173 @@
+\documentclass{article}
+
+\input{header.tex}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        {\huge LINGI2346 - Distributed application design}\\
+        \vspace{0.4cm}
+        
+        {\Large {Teacher : Marc Lobelle}}\\
+        \vspace{0.6cm}
+        
+        {\Large \textit{Problem 1: Sockets}}\\
+        \vspace{1.2cm}
+
+        \texttt{}\\
+        \vspace{0.2cm}
+
+        \includegraphics[height=10cm]{pageGarde.png}\\
+        \vspace{0.1cm}
+        {\Large \textbf{Universit\'e Catholique de Louvain}}
+        \vspace{0.3cm}
+
+        \vspace{2cm}
+        Group 24\\
+        \vspace{0.3cm}
+        Léonard Debroux\\
+        Thibaut Knop\\
+        \vspace{0.4cm}
+        2013-2014\\
+    \end{center}
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TITRE ET TABLE DES MATIERES%%%%%%%%%%%%%%%%%%
+%\maketitle
+%\tableofcontents
+%\addcontentsline{toc}{section}{ }
+\newpage
+
+%Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
+
+\section{Discussion}
+In this section, we'll discuss about the different choices we've made regarding the implementation of a transfer protocol.
+
+\subsection{Protocol choice}
+We chose to use TCP and not UDP for several reasons:
+\begin{itemize}
+  \item The transmission errors and reordering are managed by TCP
+  \item A stream oriented connection better suits the transmission of files.
+\end{itemize}
+In the implementation, the choice is made upon the socket creation.
+
+\subsection{Operating process of the server}
+The mode that seemed to be the better is the concurrent mode. \\
+We chose this option to allow several client to connect to the server and use the transfer protocol.\\
+The server thus behaves as telnet and forks upon receiving a connection attempt.
+
+\subsection{Allocation of the various functions to the server and to the client}
+Since it is a client-server architecture, the client initiates the connexion and the server replies to the requests of the client. 
+Actually, the architecture of the protocol is very similar to the one used in telnet protocol.\\
+
+The server waits to receive a connection request from a server. When a demand is received, the server forks and deletes the sockets that is linked to the client. The son deletes the socket that awaits connections and can begin to wait for the client to send a command to execute.
+
+\subsection{How to send and execute commands to/by the server}
+In order to send the command and be able to tackle the problem of having to deal with unknown length, we chose to create a header that is sent each time a command is sent.
+The header is a small structure that contains the type of the command and the length of the argument. If the command does not need an argument, that length is set to $0$.\\
+
+You can find the different possible values for the type in \verb@header.h@ 
+
+When a command enters client-side, the command is parsed to identify which one it is, and then, a header is sent accordingly. If the command is supposed to be followed by an argument, the argument is retrieved and sent to the server.\\
+
+To cope with the endianness of the different systems architectures, we have to serialize some of our data before sending it through the channel. As it is only in the header that we use \verb@uint32_t@ instead of \verb@char@ everywhere else, we only need to serialize those variables.\\
+This is done by calling the function \verb@htonl()@ on the varibles. We send the result of this conversion in our header to the other part. Upon reception of a header, the variable must be deserialize to be readable on the system. The funtion call to do so \verb@ntohl()@.\\
+
+Server-side, upon the reception of a header, depending on the type of command, either it is executed and the result is sent back, or the server waits to receive an argument, and then, upon reception, executes the command. If the commands is such that the client is waiting for a response, the same mechanism as above is used : the server send a header to the client, containing a special type (either \verb@GET_SIZE@ or \verb@ERRNO_RET@). Then the client know how much bytes have to been read on the socket.\\
+
+Note that a special type for the header is \verb@ERRNO_RET@ and is used by the server to return some information about a failure to the client.
+
+\subsection{How to transfer textual data of unspecified length from the client to the server or from the server to the client}
+
+As specified above, the use of a header allows the server (resp. the client) to read the exact right number of bytes specified in the header. More precisely, the server expects to receive headers, specifying the command to run. In the case of the \verb@PWD@ and \verb@LS@ commands, the server don't have to receive any other arguments from the clients. It executes directly the corresponding command and return the result to the client. In the other cases, the server read exactly the number of bytes specified in the header.\\
+
+For the distant \verb@LS@ command, we had different way to return the entries from the current directory to the client : 
+\begin{itemize}
+\item Concatenate all the entries into 1 single string of a specified length, typically a multiple of MSS (see next subsection), and precede this sending by a header containing the length of the string that contains the entries. However, if the concatenation of all entries into one string have a length superior to the specified length, the server has to cut the string into 2 packets to be sent, which can cause more complexity with the headers.
+\item Send back every entries on the socket to the client, until a last packet containing the char \verb@\n@ is read by the client (the char \verb@\n@ cannot be contained in files name). The last therefore knows that it doesn't have to wait for other entries anymore. Each entries is sent into a 256 bits initialized string, which allows the client to knows how much bytes it have to read at each time. The value of 256 bits actually corresponds to the maximum filename length, \verb@NAME_MAX@, defined in \verb@limits.h@.
+\end{itemize}
+
+We chose the second solution more because we hadn't thought to the first one! If we had a little more time, we would probably change for the first solution : it is probably best to avoid to send to much small packets when it is not required.
+
+\subsection{How to transfer a binary file of length unknown a priori}
+\label{put_get}
+This topic refers directly to the usage of \verb@GET@ and \verb@PUT@. As the behaviour of the two commands is very similar as they basically perform the same action except from the direction of the information, we'll describe the behavior of \verb@PUT@ only. \\
+The steps that are in emphasis are the one that allow us to send unknown length data.\\
+
+The actions performed by the client are the following:
+\begin{itemize}[noitemsep]
+    \item \emph{header sent to inform of the command and of the length of the filename};
+    \item message sent to give the filename;
+    \item file is opened in binary read mode;
+    \item \emph{header sent to tell the number of full size packets to be sent};
+    \item loop sending full size packets;
+    \item \emph{header informing of the length of the last packet sent};
+    \item message containing the last packet.\\
+\end{itemize}
+
+The actions performed by the server are the following:
+\begin{itemize}[noitemsep]
+    \item recognize the command to execute;
+    \item receive the filename;
+    \item \emph{receive the number of full size packets to be received};
+    \item create/open a file in binary write mode with the right filename;
+    \item loop to receive the full size packets;
+    \item \emph{receive a header informing of the length of the last packet to receive};
+    \item receive the last packet of the file.\\
+\end{itemize}
+
+The size for the packets is set at 1072 bytes as it corresponds to two time the maximum segment size that ipv4 host are required to be able to handle.
+
+\subsection{Can one do something useful with the OOB data within the framework of this problem ?}
+
+Out of Band data could be used in this project to implement a channel to send priority messages. Those messages could be, for instances, control messages. If one wanted to interrupt a file transfert, that could be done by sending a messages saying so on that channel. However, in our case, the client send the command and then synchronize on an answer from the server. Therefore, OOB data are less interesting, since it is mainly used to send a control message independently of the other data?
+
+\section{Presentation}
+\subsection{Protocols implementing the various functions}
+We'll describe here how we implemented the different commands.
+\begin{itemize}
+\item \verb@ls, pwd, cd@ - Those are implemented almost the same way. As explained above, a header is sent and depending on the presence of an argument, a packet is sent to give the argument. The reply is than sent back to the client.
+\item \verb@get, put@ - Those protocols are implemented the same way, except that the direction client-server changes from one to the other. The detail of the protocol is given in the section \ref{put_get}.
+
+\end{itemize}
+\subsection{User guides of the client and server}
+\begin{description}
+\item[Server] The only command you can perform for the server is to run it by launching \verb@./myftpd@. All the commands and responses the server will perform are sent from and to the client.
+\item[Client] As specified in the functional description of the application, the client is launch by running \verb@./myftp@ in the right corresponding directory (see next Subsection). The commands available are :
+\begin{itemize}
+\item \verb@pwd@: Display the current directory (of the environment) of the server
+\item \verb@lpwd@: Display the current directory (of the environment) of the client
+\item \verb@cd dir@: Change the current directory of the server into \verb@dir@. Not that the usage of relative and absolute paths, as well as \verb@~@ paths  are accepted.
+\item \verb@lcd dir@: Change the current directory of the client into \verb@dir@. Not that the usage of relative and absolute paths, as well as \verb@~@ paths  are accepted.
+\item \verb@ls@: Display the contents of the current directory of the server.
+\item \verb@lls@: Display the contents of the current directory of the client.
+\item \verb@get file@: The file \verb@file@ is copied from the current directory of the server towards the current directory of the client.
+\item \verb@put file@: The file \verb@file@ is copied from the current directory of the client towards the current directory of the server.
+\item \verb@bye@: Close the file transfer session
+\end{itemize}
+\end{description}
+\subsection{The source code directory and instruction for building the executable files}
+The directory containing the source codes is named \verb@Mission2-Group24@.  \\
+It contains the following files : 
+\begin{itemize}
+\item \verb@header.h@: contains the typedef declaration of the structure \verb@msgHeader@, as well as the type of possible message, encoded as a \verb@int@.
+\item \verb@utils.c@: contains a set of methods which are useful for both client and server. All the methods are designed to be used and called either by the client and the server. Note that the method \verb@sendType@, we do not forget to call \verb@htonl@ to format the \verb@int@ variables from the \textit{host} layer to the \textit{network} layer.
+\item \verb@myftp.c@: contains the code for the client. It works as telnet and has a similar architecture code.
+\item \verb@myftpd.c@: contains the code for the server. It works as telnetd and has a similar architecture code.
+\item \verb@Makefile@: Automate the compilation and the linkage of the .c sources to produce executable files, \verb@myftp@ and \verb@myftpd@ respectively.
+\end{itemize}
+In order to build the executable files, all is needed is to run the \verb@Makefile@ by running the \verb@make@ command in the current directory (\verb@Mission2-Group24@).\\
+
+To run the client and the server, just run \verb@./myftp@ and \verb@./myftpd@ respectively, by starting the server first.
+\subsection{Commented listings of the programs}
+ \subsubsection{Client specific code}~
+    \lstinputlisting{../myftp/myftp.c}
+    \subsubsection{Server specific code}~
+    \lstinputlisting{../myftp/myftpd.c}
+    \subsubsection{../Shared code}~
+    \lstinputlisting{../myftp/utils.c}
+    \lstinputlisting{../myftp/header.h}
+    \lstinputlisting{../myftp/utils.h}
+\end{document}
+
