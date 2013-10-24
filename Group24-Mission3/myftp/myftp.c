@@ -17,7 +17,7 @@
 #include <errno.h>
 
 #include <rpc/rpc.h>
-#include "rpspec.h"
+#include "rpspec_cust.h"
 #include <unistd.h>
 //#define M2_ADDR "130.104.172.88"
 //#define M2_ADDR "127.0.0.1"
@@ -74,7 +74,9 @@ char *argv[ ];
       printf("%s\n", *result);
     }
 
-
+    /**
+    Remote procedure: cd
+    */
     else if(cmdcmp("cd", buffer)){
       char* arg;
       getArg("cd", buffer, &arg);
@@ -85,7 +87,9 @@ char *argv[ ];
       free(arg);
     }
 
-
+    /**
+    Remote procedure: ls
+    */
     else if(cmdcmp("ls", buffer)){
       char ** result;
       result = rls_1((void *)NULL, cl);
@@ -103,7 +107,17 @@ char *argv[ ];
     
 
     else if(cmdcmp("get", buffer)){
-
+      char* arg;
+      getArg("cd", buffer, &arg);
+      struct file_desc desc;
+      desc.filename = arg;
+      desc.offset = 0;
+      struct file_part *result;
+      //uint32_t offset = 0;
+      printf("function call\n");
+      result = rget_1(&arg, cl);
+      // printf("last: %i", result->last);
+      // printf("chunck: %s", result->chunck);
     }
 
 
