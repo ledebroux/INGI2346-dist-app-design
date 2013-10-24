@@ -13,6 +13,7 @@ char *argv[ ];
 {
   struct arga data, *pdata;
   double *result;
+  char ** res3;
   CLIENT *cl;
 
   if(argc != 2){
@@ -41,5 +42,13 @@ char *argv[ ];
   }
   printf("the arga1 field is %d\n", pdata->arga1);
   printf("the arga2 field is %d\n", pdata->arga2);
+
+  res3 = rprocc_1((void *)NULL, cl);
+  if (res3 == (char**) NULL){
+    clnt_perror(cl,argv[1]);
+    exit(1);
+  }
+  printf("the result of RPROCC is %s\n", *res3);
+
   clnt_destroy(cl);
 }

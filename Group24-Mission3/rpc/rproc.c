@@ -1,7 +1,6 @@
 /*    rproc.c     */
 
 #include "rpspec.h"
-#include <unistd.h>
 
 double *rproca_1_svc(data, rqstp)
 struct arga *data;
@@ -27,3 +26,15 @@ struct svc_req *rqstp;
 
       return(&result);
 }
+
+char **rprocc_1_svc(none, rqstp)
+void *none;
+struct svc_req *rqstp;
+
+{
+      char * result = malloc((strlen("ta mere")+1)*sizeof(char));
+      result = "ta mere";
+
+      return(&result);
+}
+
