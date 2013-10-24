@@ -30,6 +30,30 @@ struct svc_req *rqstp;
   return(&curr_dir);
 }
 
+int *rcd_1_svc(dir, rqstp)
+char **dir;
+struct svc_req *rqstp;
+{
+  char * current;
+  int i = getPwd(&current);
+  static int j;
+  j = cd(*dir, &current);
+  return(&j);
+}
+
+char **rls_1_svc(none, rqstp)
+void *none;
+struct svc_req *rqstp;
+{
+  static char *result;
+  char *curr_dir;
+  int i = getPwd(&curr_dir);
+  if(!i){
+    getLs(curr_dir, &result, 0);
+  }
+  return(&result);
+}
+
 
 // int sigflag;
 

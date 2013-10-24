@@ -41,7 +41,7 @@ char *argv[ ];
   }
 
   char buffer[512];
-  
+
   while(1) {
     printf(">> ");
     fgets(buffer,512,stdin);
@@ -61,7 +61,9 @@ char *argv[ ];
 
     }
 
-
+    /**
+    Remote procedure: pwd
+    */
     else if(cmdcmp("pwd", buffer)){
       char ** result;
       result = rpwd_1((void *)NULL, cl);
@@ -74,12 +76,24 @@ char *argv[ ];
 
 
     else if(cmdcmp("cd", buffer)){
-
+      char* arg;
+      getArg("cd", buffer, &arg);
+      int *i = rcd_1(&arg, cl);
+      if(*i!=0){
+        fprintf(stderr, "Error : %s\n",strerror(*i));
+      }
+      free(arg);
     }
 
 
     else if(cmdcmp("ls", buffer)){
-
+      char ** result;
+      result = rls_1((void *)NULL, cl);
+      if (result == (char**) NULL){
+        clnt_perror(cl,argv[1]);
+        exit(1);
+      }
+      printf("%s\n", *result);
     }
 
 

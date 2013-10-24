@@ -138,41 +138,64 @@ int sendType(int s, int type, int length) {
  * and send end when there is no more entries
  * if local: just print the entry
  */
-int getLs(char* path, int s){
+int getLs(char* path, char** result, int local){
   DIR *dir;
   struct dirent *dent;
   dir = opendir(path);
   if(dir!=NULL)
   {
     int temp = 0;
-    while((dent=readdir(dir))!=NULL) {
-      if(s < 0) {
+    if(local != 0){
+      while((dent=readdir(dir))!=NULL) {
         printf ("%s\n", dent->d_name);
-      } else {
-        printf ("send[%s]\n", dent->d_name);
-        errno = 0;
-        write(s, dent->d_name, sizeof(dent->d_name));
-        if(errno != 0){
-          temp = errno;
-          break;
-        }
       }
+    } else {
+      int length = 0;
+      while((dent=readdir(dir))!=NULL) {
+        length = length + strlen(dent->d_name) + 1;
+      }
+      closedir(dir);
+      dir = opendir(path);
+      if(dir!=NULL){
+        char str[length];
+        int notfirst = 0;
+        int len;
+        while((dent=readdir(dir))!=NULL) {
+          if(notfirst){
+            strcat(str, dent->d_name);
+            len = strlen(str);
+            if(len == length-1){
+              str[len] = 0;
+            } else {
+              str[len] = 10;
+              str[len+1] = 0;
+            }
+          } else {
+            strcpy(str, dent->d_name);
+            len = strlen(str);
+            str[len] = 10;
+            str[len+1] = 0;
+            notfirst = 1;
+          }
+        }
+        int size = 0;
+        int i;
+        for(i=0;str[i]!= '\0';i++){
+          size++;
+        }
+        char* temp2;
+        temp2 = malloc(size*sizeof(char));
+        for(i=0;i<=size;i++){
+         temp2[i] = str[i];
+        }
+        *result = temp2;
+        // *result = malloc(strlen(str)+1);
+        // strcpy(*result,str);
+      }
+      closedir(dir);
     }
-    if(s >= 0){
-      char end[256];
-      end[0] = 10;
-      end[1] = 0;
-      errno = 0;
-      write(s, end, 256);
-      errno = temp;
-      sendType(s, ERRNO_RET, errno);
-    }
-  } else {
-    printf("Wrong Path");
   }
-  errno = 0;
-  closedir(dir);
-  return errno;
+  return 0;
 }
 
 
@@ -227,23 +250,20 @@ int cd(char* dir, char** path){
  * Put the current directory in pwd 
  */
 int getPwd(char** pwd){
-  printf("lolo2");
 	char temp[4096]; // 4096 is the MAX_PATH length, so it is logical to take that value
   errno = 0;
 	if (getcwd(temp, sizeof(temp)) != NULL){
-		 int size = 0;
-		 int i;
-		 for(i=0;temp[i]!= '\0';i++){
-		 	size++;
-		 }
-     printf("lolo");
-     char* temp2;
-     temp2 = malloc(size*sizeof(char));
+    int size = 0;
+    int i;
+    for(i=0;temp[i]!= '\0';i++){
+    	size++;
+    }
+    char* temp2;
+    temp2 = malloc(size*sizeof(char));
 		for(i=0;i<=size;i++){
 		 temp2[i] = temp[i];
 		}
     *pwd = temp2;
-    printf("lala");
 	}
 	return errno;     
 }

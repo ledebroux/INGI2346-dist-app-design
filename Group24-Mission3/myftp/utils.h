@@ -5,7 +5,7 @@
  * utils.c
  */
 
-int getLs(char* path, int s);
+int getLs(char* path, char**, int s);
 
 /*
  * getPwd place in pwd the current path 
