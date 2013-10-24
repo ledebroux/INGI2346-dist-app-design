@@ -27,7 +27,6 @@ main(argc,argv)
 int argc;
 char *argv[ ];
 {
-  char ** result;
   CLIENT *cl;
 
   if(argc != 2){
@@ -41,12 +40,69 @@ char *argv[ ];
     exit(1);
   }
 
-  result = rpwd_1((void *)NULL, cl);
-  if (result == (char**) NULL){
-    clnt_perror(cl,argv[1]);
-    exit(1);
+  char buffer[512];
+  
+  while(1) {
+    printf(">> ");
+    fgets(buffer,512,stdin);
+
+
+    if(cmdcmp("lpwd", buffer)){
+
+    }
+
+
+    else if(cmdcmp("lcd", buffer)){
+
+    }
+
+
+    else if(cmdcmp("lls", buffer)){
+
+    }
+
+
+    else if(cmdcmp("pwd", buffer)){
+      char ** result;
+      result = rpwd_1((void *)NULL, cl);
+      if (result == (char**) NULL){
+        clnt_perror(cl,argv[1]);
+        exit(1);
+      }
+      printf("%s\n", *result);
+    }
+
+
+    else if(cmdcmp("cd", buffer)){
+
+    }
+
+
+    else if(cmdcmp("ls", buffer)){
+
+    }
+
+
+    else if(cmdcmp("bye", buffer)){
+      break;
+    }
+    
+
+    else if(cmdcmp("get", buffer)){
+
+    }
+
+
+    else if(cmdcmp("put", buffer)){
+      
+    }
+
+
+    else{
+      printf("Unknown command\n");
+    }
+   
   }
-  printf("the result of RPROCC is %s\n", *result);
 
   // data.arga1 = 5;
   // data.arga2 = 3;
@@ -73,6 +129,19 @@ char *argv[ ];
   // printf("the result of RPROCC is %s\n", *res3);
 
   clnt_destroy(cl);
+}
+
+int cmdcmp(char* cmd, char* str){
+  int i;
+  for(i=0; i<strlen(cmd); i++){
+    if(cmd[i]!=str[i]){
+      return 0;
+    }
+  }
+  if(cmd[i]!=0 && cmd[i]!=32 && cmd[i]!=10){
+    return 0;
+  }
+  return 1;
 }
 
 
