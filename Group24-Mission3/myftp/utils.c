@@ -227,6 +227,7 @@ int cd(char* dir, char** path){
  * Put the current directory in pwd 
  */
 int getPwd(char** pwd){
+  printf("lolo2");
 	char temp[4096]; // 4096 is the MAX_PATH length, so it is logical to take that value
   errno = 0;
 	if (getcwd(temp, sizeof(temp)) != NULL){
@@ -235,12 +236,14 @@ int getPwd(char** pwd){
 		 for(i=0;temp[i]!= '\0';i++){
 		 	size++;
 		 }
+     printf("lolo");
      char* temp2;
      temp2 = malloc(size*sizeof(char));
 		for(i=0;i<=size;i++){
 		 temp2[i] = temp[i];
 		}
     *pwd = temp2;
+    printf("lala");
 	}
 	return errno;     
 }
