@@ -178,16 +178,18 @@ int getLs(char* path, char** result, int local){
             notfirst = 1;
           }
         }
+
         int size = 0;
         int i;
         for(i=0;str[i]!= '\0';i++){
           size++;
         }
         char* temp2;
-        temp2 = malloc(size*sizeof(char));
+        temp2 = malloc((size+1)*sizeof(char));
         for(i=0;i<=size;i++){
          temp2[i] = str[i];
         }
+
         *result = temp2;
         // *result = malloc(strlen(str)+1);
         // strcpy(*result,str);

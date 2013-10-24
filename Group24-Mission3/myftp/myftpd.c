@@ -27,10 +27,13 @@ struct svc_req *rqstp;
 {
   static char *curr_dir;
   int i = getPwd(&curr_dir);
+  if(i!=0){
+    curr_dir = strerror(i);
+  }
   return(&curr_dir);
 }
 
-int *rcd_1_svc(dir, rqstp)
+int32_t *rcd_1_svc(dir, rqstp)
 char **dir;
 struct svc_req *rqstp;
 {
@@ -49,7 +52,10 @@ struct svc_req *rqstp;
   char *curr_dir;
   int i = getPwd(&curr_dir);
   if(!i){
-    getLs(curr_dir, &result, 0);
+    int j = getLs(curr_dir, &result, 0);
+    if(j!=0){
+      result = strerror(j);
+    }
   }
   return(&result);
 }
