@@ -73,7 +73,6 @@ struct svc_req *rqstp;
   //printf("file: %s", desc->filename);
   static struct file_part fpart;
 
-  // exit(1);
   char *curr_dir;
   int i = getPwd(&curr_dir);
   if(!i){
@@ -82,14 +81,13 @@ struct svc_req *rqstp;
     strcat(str, "/");
     strcat(str, desc->filename);
     FILE* f = NULL;
-    errno = 0;
-    // printf("file: %s\n", str);
-    //exit(1);
+    errno = 0;);
     f = fopen(str, "rb");
     if(f != NULL){
       fseek(f, 0, SEEK_END);
       int size = ftell(f);
       rewind(f);
+      
       if(desc->offset > size) {
         //TODO : error
       }
@@ -97,10 +95,8 @@ struct svc_req *rqstp;
       fseek(f, desc->offset, SEEK_SET);
       static char part[PSIZE];
       int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
-      //printf("part: %s\n", part);
       fpart.chunck.chunck_val = part;
       fpart.chunck.chunck_len = PSIZE;
-      // printf("Size of file: %i\n", size);
       if(ftell(f)==size){
         fpart.chunck.chunck_len = size%PSIZE;
         fpart.last = fpart.chunck.chunck_len;
@@ -115,6 +111,38 @@ struct svc_req *rqstp;
     }
   }
   return &fpart;
+}
+
+int *rput_1_svc(fput, rqstp)
+file_put *fput;
+struct svc_req *rqstp;
+{ 
+  printf("put function\n");
+  static int result;
+  char *curr_dir;
+  int i = getPwd(&curr_dir);
+  if(!i){
+    char str[strlen(curr_dir) + strlen(fput->filename) + 1];
+    strcpy(str, curr_dir);
+    strcat(str, "/");
+    strcat(str, fput->filename);
+
+    FILE* f = NULL;
+
+    if(fput->offset == 0){
+      f = fopen(str, "wb+");
+    } else {
+      f = fopen(str, "ab");
+    }
+
+    int w = fwrite(fput->chunck.chunck_val, 1, fput->chunck.chunck_len, f);
+    if(w != fput->chunck.chunck_len){
+      printf("Error\n");
+    }
+
+    fclose(f);
+  }
+  return &result;
 }
 
 
