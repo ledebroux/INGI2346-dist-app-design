@@ -41,8 +41,17 @@ char *argv[ ];
 
   char buffer[512];
 
+  char** pwd;
+  pwd = rpwd_1((void *)NULL, cl);
+  if (pwd == (char**) NULL){
+    clnt_perror(cl,argv[1]);
+    exit(1);
+  }
+
   while(1) {
+    printf("%s", *pwd);
     printf(">> ");
+
     fgets(buffer,512,stdin);
 
 
@@ -88,6 +97,7 @@ char *argv[ ];
     Remote procedure: pwd
     */
     else if(cmdcmp("pwd", buffer)){
+      /*
       char ** result;
       result = rpwd_1((void *)NULL, cl);
       if (result == (char**) NULL){
@@ -95,6 +105,8 @@ char *argv[ ];
         exit(1);
       }
       printf("%s\n", *result);
+      */
+      printf("%s\n", *pwd);
     }
 
     /**
@@ -103,10 +115,16 @@ char *argv[ ];
     else if(cmdcmp("cd", buffer)){
       char* arg;
       getArg("cd", buffer, &arg);
-      int *i = rcd_1(&arg, cl);
-      if(*i!=0){
-        fprintf(stderr, "Error : %s\n",strerror(*i));
+      struct cd_arg cdArg;
+      cdArg.path = arg;
+      cdArg.pwd = *pwd;
+
+      struct cd_res *result;
+      result = rcd_1(&cdArg, cl);
+      if(result->code != 0){
+        fprintf(stderr, "Error : %s\n",strerror(result->code));
       }
+      *pwd = result->pwd;
       free(arg);
     }
 
@@ -115,7 +133,7 @@ char *argv[ ];
     */
     else if(cmdcmp("ls", buffer)){
       char ** result;
-      result = rls_1((void *)NULL, cl);
+      result = rls_1(pwd, cl);
       if (result == (char**) NULL){
         clnt_perror(cl,argv[1]);
         exit(1);
@@ -136,6 +154,7 @@ char *argv[ ];
 
       desc.filename = arg;
       desc.offset = 0;
+      desc.pwd = *pwd;
       struct file_part *result;
 
       result = rget_1(&desc, cl);
@@ -164,6 +183,7 @@ char *argv[ ];
           fclose(f);
         }
       }
+      free(arg);
     }
 
 
@@ -173,6 +193,7 @@ char *argv[ ];
       struct file_put fput;
 
       fput.filename = arg;
+      fput.pwd = *pwd;
 
       char *curr_dir;
       int i = getPwd(&curr_dir);
@@ -196,7 +217,6 @@ char *argv[ ];
           for(j = 0; j<nb_packets; j++){
             char part[PSIZE];
             int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
-            printf("offset: %s\n", part);
             fput.chunck.chunck_val = part;
             fput.chunck.chunck_len = PSIZE;
             fput.offset = j*PSIZE;
@@ -214,6 +234,7 @@ char *argv[ ];
           printf("Error: Failed to open file");
         }
       }
+      free(arg);
     }
 
 
