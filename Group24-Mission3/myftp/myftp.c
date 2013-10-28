@@ -113,39 +113,27 @@ char *argv[ ];
       desc.filename = arg;
       desc.offset = 0;
       struct file_part *result;
-      //uint32_t offset = 0;
-      printf("function call: %s\n", desc.filename);
+
       result = rget_1(&desc, cl);
       if(result == (file_part*) NULL){
         clnt_perror(cl,argv[1]);
         exit(1);
       }
-      //printf("chunck right after: %s\n", result->chunck);
       if(result->last < 0){
         //error from server
         printf("chunck: %s\n", result->chunck.chunck_val);
-        printf("last: %i\n", result->last);
       } else {
         FILE* f = NULL;
         f = fopen(arg, "wb");
         
         while((int)result->last == 0){
-          printf("chunck: %s\n", result->chunck.chunck_val);
-          printf("chunck size: %i\n", result->chunck.chunck_len);
           fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
           desc.offset = desc.offset + result->chunck.chunck_len;
-          printf("Offset: %i\n", desc.offset);
           result = rget_1(&desc, cl);
         }
-        printf("chunck: %s\n", result->chunck.chunck_val);
-        printf("chunck size: %i\n", result->chunck.chunck_len);
         fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
         fclose(f);
-
-        printf("last: %i\n", result->last);
       }
-      
-      //printf("chunck: %s\n", result->chunck);
     }
 
 

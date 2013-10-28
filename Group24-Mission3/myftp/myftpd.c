@@ -101,9 +101,7 @@ struct svc_req *rqstp;
       fpart.chunck.chunck_val = part;
       fpart.chunck.chunck_len = PSIZE;
       // printf("Size of file: %i\n", size);
-      printf("Offset position when read: %lu\n", ftell(f));
       if(ftell(f)==size){
-        printf("IS LAST PART\n");
         fpart.chunck.chunck_len = size%PSIZE;
         fpart.last = fpart.chunck.chunck_len;
       } else {
@@ -116,9 +114,6 @@ struct svc_req *rqstp;
       fpart.last = -fpart.chunck.chunck_len;
     }
   }
-  printf("chunck: %s\n", fpart.chunck.chunck_val);
-  printf("chunck last: %i\n", fpart.last);
-  //exit(1);
   return &fpart;
 }
 
