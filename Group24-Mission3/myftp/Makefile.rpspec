@@ -12,8 +12,8 @@ SOURCES_SVC.c = myftpd.c
 SOURCES_SVC.h = 
 SOURCES.x = rpspec.x
 
-TARGETS_SVC.c = utils.c rpspec_svc.c myftp.c rpspec_xdr.c 
-TARGETS_CLNT.c = utils.c rpspec_clnt.c myftpd.c rpspec_xdr.c 
+TARGETS_SVC.c = utils.c rpspec_svc.c myftpd.c rpspec_xdr.c 
+TARGETS_CLNT.c = utils.c rpspec_clnt.c myftp.c rpspec_xdr.c 
 TARGETS = utils.c rpspec.h rpspec_xdr.c rpspec_clnt.c rpspec_svc.c myftp.c myftpd.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
