@@ -104,6 +104,7 @@ It contains the following files :
 \item \verb@myftpd.c@: contains the code for the server.
 \item \verb@Makefile@: automate the compilation and the linkage of the .c sources to produce executable files, \verb@myftp@ and \verb@myftpd@ respectively, as well as the generation of the \verb@XDR@ procedures, the server and client stub.
 \item \verb@rpspec.x@ : specifies the names, program, version and procedure numbers of the remote procedures.
+\item \verb@rpspec_xdr.c@ : contains the XDR filters allowing translation between structures and their external representations.
 \item \verb@rpspec_clnt.c@ : contains the generated code for the client stub, that contains the real remote procedure calls for the client process and looks like a local implementation of the remote procedure.
 \item \verb@rpspec_svc.c@ : contains the generated code for the server stub.
 \item \verb@rpspec.h@ : a common header file used by both client and server stub.
@@ -119,7 +120,7 @@ To run the client and the server, just run \verb@./myftp@ and \verb@./myftpd@ re
   	      \lstinputlisting{../myftp/rpspec.h}
  	     \lstinputlisting{../myftp/rpspec_clnt.c}
 	     \lstinputlisting{../myftp/rpspec_svc.c}
- 
+ 	  \lstinputlisting{../myftp/rpspec_xdr.c}
  \subsubsection{Client specific code}~
     \lstinputlisting{../myftp/myftp.c}
     \subsubsection{Server specific code}~
