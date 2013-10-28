@@ -35,21 +35,33 @@ struct svc_req *rqstp;
   return(&curr_dir);
 }
 
-int32_t *rcd_1_svc(dir, rqstp)
-char **dir;
+struct cd_res *rcd_1_svc(arg, rqstp)
+struct cd_arg *arg;
 struct svc_req *rqstp;
 {
-  char * current;
-  int i = getPwd(&current);
-  static int j;
-  j = cd(*dir, &current);
-  return(&j);
+  chdir(arg->pwd);
+  static char * current;
+  getPwd(&current);
+  static struct cd_res result;
+  result.code = cd(arg->path, &current);
+  getPwd(&current);
+  result.pwd = current;
+  printf("Current %s", current);
+  return(&result);
+
+  // static struct cd_res result;
+  // result.code = cd(arg->path, &arg->pwd);
+  // static char * current;
+  // getPwd(&current);
+  // result.pwd = current;
+  // return(&result);
 }
 
-char **rls_1_svc(none, rqstp)
-void *none;
+char **rls_1_svc(pwd, rqstp)
+char **pwd;
 struct svc_req *rqstp;
-{
+{ 
+  chdir(*pwd);
   static char *result;
   char *curr_dir;
   int i = getPwd(&curr_dir);
@@ -66,7 +78,7 @@ struct file_part *rget_1_svc(desc, rqstp)
 file_desc *desc;
 struct svc_req *rqstp;
 {  
-
+  chdir(desc->pwd);
   static struct file_part fpart;
 
   char *curr_dir;
@@ -111,7 +123,8 @@ struct svc_req *rqstp;
 int *rput_1_svc(fput, rqstp)
 file_put *fput;
 struct svc_req *rqstp;
-{ 
+{  
+  chdir(fput->pwd);
   static int result;
   char *curr_dir;
   int i = getPwd(&curr_dir);
