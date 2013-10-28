@@ -170,7 +170,6 @@ struct svc_req *rqstp;
       f = fopen(str, "ab");
     }
 
-    //printf("offset: %lu should be %i\n", ftell(f), fput->offset);
     //writes in the server file
     if(fput->offset == ftell(f)){
       int w = fwrite(fput->chunck.chunck_val, 1, fput->chunck.chunck_len, f);
