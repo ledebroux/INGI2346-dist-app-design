@@ -154,6 +154,7 @@ int concatCustom(char *str, char *begin, char *end){
  */
 int getLs(char* path, char** result, int local){
   DIR *dir;
+  errno = 0;
   struct dirent *dent;
   dir = opendir(path);
   if(dir!=NULL)
@@ -205,13 +206,11 @@ int getLs(char* path, char** result, int local){
         }
 
         *result = temp2;
-        // *result = malloc(strlen(str)+1);
-        // strcpy(*result,str);
       }
       closedir(dir);
     }
   }
-  return 0;
+  return errno;
 }
 
 
@@ -236,9 +235,6 @@ int cd(char* dir, char** path){
       temp[i] = 0;
       char str[strlen(temp) + strlen(*path) + 1];
       concatCustom(str, *path, temp);
-      // strcpy(str, *path);
-      // strcat(str, "/");
-      // strcat(str, temp);
       *path = malloc(strlen(str)+1);
       strcpy(*path,str);
     }
@@ -249,9 +245,6 @@ int cd(char* dir, char** path){
   } else if(startsWith(dir,"/") == 0){
     char str[strlen(dir) + strlen(*path) + 1];
     concatCustom(str, *path, dir);
-    // strcpy(str, *path);
-    // strcat(str, "/");
-    // strcat(str, dir);
     *path = malloc(strlen(str)+1);
     strcpy(*path,str);
   } else {

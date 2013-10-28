@@ -42,24 +42,33 @@
 %Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
 
 \section{Discussion}
-In this section, we'll discuss about the different choices we've made regarding the implementation of a transfer protocol.
 
 \subsection{Allocation of the various functions to the server and to the client}
+Thanks to the RPC model, we can call procedure outside of the application address space. For that purpose, we have to specify the data structure used as argument or return value of the remote procedures in the RPCL file (\verb@rpspec.x@), the \verb@main@ method of the client, as well as the remote procedures executed by the server side. \verb@RPCGEN@ help us by generating the code to handle the connections and exchange of data between the client and the remote process.\\
 
+There are 2 types of actions possible for the client (\verb@myftp.c@) :
+\begin{enumerate}
+\item Perform a local command : the main directly utilizes the auxiliary functions that perform the requests and described in \verb@utils.c@
+\item Perform a remote command on the server : the client call the remote procedures defined on the server side (\verb@myftpd.c@) thanks to the RPC model. The server side will call the auxiliary functions that perform the requests, as described in \verb@utils.c@.
+\end{enumerate}
 
 \subsection{Organisation of the transfer between client and server of data of unspecified length as parameters and results of remote procedure calls}
 
 
 \subsection{How to support simultaneous clients ?}
-
+At first view, we thought we had different options to support simultaneous clients :
+\begin{enumerate}
+\item Keep a dictionary on the server side containing the state (i.e the current directory) for each client. At each remote procedure call from a client, just look-up in the dictionary to retrieve the state of the connection. However, this solution was totally not possible due the architecture of the RPC model : indeed, the server don't maintain any information about the clients remotely calling procedures. Actually, it is the job of the \verb@PortMapper@ locate the remote procedures on a particular host.
+\item Another solution is 
+\end{enumerate}
 
 \section{Presentation}
 \subsection{Communication protocol between the client and the server}
 
 \subsection{User guides of the client and server}
 \begin{description}
-\item[Server] The only command you can perform for the server is to run it by launching \verb@./myftpd@. All the commands and responses the server will perform are sent from and to the client.
-\item[Client] As specified in the functional description of the application, the client is launch by running \verb@./myftp@ in the right corresponding directory (see next Subsection). The commands available are :
+\item[Server] The only command you can perform for the server is to run it by launching \verb@./myftpd@. All the commands are sent remotely by the client.
+\item[Client] As specified in the functional description of the application, the client is launched by running \verb@./myftp@ in the right corresponding directory (see next Subsection). The commands available are :
 \begin{itemize}
 \item \verb@pwd@: Display the current directory (of the environment) of the server
 \item \verb@lpwd@: Display the current directory (of the environment) of the client
@@ -73,26 +82,37 @@ In this section, we'll discuss about the different choices we've made regarding 
 \end{itemize}
 \end{description}
 \subsection{The source code directory and instruction for building the executable files}
-The directory containing the source codes is named \verb@Mission2-Group24@.  \\
+The directory containing the source codes is named \verb@Mission3-Group24@.  \\
 It contains the following files : 
 \begin{itemize}
-\item \verb@header.h@: contains the typedef declaration of the structure \verb@msgHeader@, as well as the type of possible message, encoded as a \verb@int@.
-\item \verb@utils.c@: contains a set of methods which are useful for both client and server. All the methods are designed to be used and called either by the client and the server. Note that the method \verb@sendType@, we do not forget to call \verb@htonl@ to format the \verb@int@ variables from the \textit{host} layer to the \textit{network} layer.
-\item \verb@myftp.c@: contains the code for the client. It works as telnet and has a similar architecture code.
-\item \verb@myftpd.c@: contains the code for the server. It works as telnetd and has a similar architecture code.
-\item \verb@Makefile@: Automate the compilation and the linkage of the .c sources to produce executable files, \verb@myftp@ and \verb@myftpd@ respectively.
+\item \verb@utils.c@: contains a set of methods which are useful for both client and server. All the methods are designed to be used and called either by the client and the server. 
+\item \verb@myftp.c@: contains the code for the client.
+\item \verb@myftpd.c@: contains the code for the server.
+\item \verb@Makefile@: automate the compilation and the linkage of the .c sources to produce executable files, \verb@myftp@ and \verb@myftpd@ respectively, as well as the generation of the \verb@XDR@ procedures, the server and client stub.
+\item \verb@rpspec.x@ : specifies the names, program, version and procedure numbers of the remote procedures.
+\item \verb@rpspec_clnt.c@ : contains the generated code for the client stub, that contains the real remote procedure calls for the client process and looks like a local implementation of the remote procedure.
+\item \verb@rpspec_svc.c@ : contains the generated code for the server stub.
+\item \verb@rpspec.h@ : a common header file used by both client and server stub.
 \end{itemize}
-In order to build the executable files, all is needed is to run the \verb@Makefile@ by running the \verb@make@ command in the current directory (\verb@Mission2-Group24@).\\
+In order to build the executable files, all is needed is to run the \verb@Makefile@ by running the \verb@make@ command in the current directory (\verb@Mission3-Group24@).\\
 
 To run the client and the server, just run \verb@./myftp@ and \verb@./myftpd@ respectively, by starting the server first.
 \subsection{Commented listings of the programs}
+ \subsubsection{.x file}~
+   \lstinputlisting{../myftp/rpspec.x}
+ 
+  \subsubsection{RPCGEN generated files}~
+  	      \lstinputlisting{../myftp/rpspec.h}
+ 	     \lstinputlisting{../myftp/rpspec_clnt.c}
+	     \lstinputlisting{../myftp/rpspec_svc.c}
+ 
  \subsubsection{Client specific code}~
     \lstinputlisting{../myftp/myftp.c}
     \subsubsection{Server specific code}~
     \lstinputlisting{../myftp/myftpd.c}
-    \subsubsection{../Shared code}~
+    \subsubsection{../Other}~
     \lstinputlisting{../myftp/utils.c}
-    \lstinputlisting{../myftp/header.h}
     \lstinputlisting{../myftp/utils.h}
+     \lstinputlisting{../myftp/MakeFile}
 \end{document}
 
