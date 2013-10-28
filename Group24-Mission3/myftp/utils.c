@@ -121,6 +121,20 @@ int sendType(int s, int type, int length) {
 }
 
 
+/*
+ * concatCustom copy begin in str, then concat it with / and end
+ * str must be of a length enough to contain begin+"/"+end
+ * Return 0 if
+ */
+
+int concatCustom(char *str, char *begin, char *end){
+  strcpy(str, begin);
+  strcat(str, "/");
+  strcat(str, end);
+  return 0;
+}
+
+
 
 
 
