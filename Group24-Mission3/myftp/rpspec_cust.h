@@ -16,7 +16,7 @@ extern "C" {
 
 struct file_part {
   char *chunck;
-  uint32_t last;
+  int32_t last;
 };
 typedef struct file_part file_part;
 
@@ -29,7 +29,7 @@ typedef struct file_desc file_desc;
 #define PROG 0x12345688
 #define VERS 1
 
-#define PSIZE 1024
+#define PSIZE 128
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define RPWD 1
@@ -42,8 +42,8 @@ extern  int32_t * rcd_1_svc(char **, struct svc_req *);
 extern  char ** rls_1(void *, CLIENT *);
 extern  char ** rls_1_svc(void *, struct svc_req *);
 #define RGET 4
-extern  file_part * rget_1(char **, CLIENT *);
-extern  file_part * rget_1_svc(char **, struct svc_req *);
+extern  file_part * rget_1(file_desc *, CLIENT *);
+extern  file_part * rget_1_svc(file_desc *, struct svc_req *);
 extern int prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */

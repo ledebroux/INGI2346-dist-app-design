@@ -55,7 +55,7 @@ rls_1(void *argp, CLIENT *clnt)
 }
 
 file_part *
-rget_1(char **argp, CLIENT *clnt)
+rget_1(file_desc *argp, CLIENT *clnt)
 {
 	static file_part clnt_res;
 

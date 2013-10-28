@@ -18,8 +18,10 @@
 #include <errno.h>
 
 #include <rpc/rpc.h>
-#include "rpspec_cust.h"
+#include "rpspec.h"
 #include <unistd.h>
+
+#define PSIZE 1024
 
 char **rpwd_1_svc(none, rqstp)
 void *none;
@@ -60,47 +62,63 @@ struct svc_req *rqstp;
   return(&result);
 }
 
-struct file_part *rget_1_svc(name, rqstp)
-char **name;
+struct file_part *rget_1_svc(desc, rqstp)
+file_desc *desc;
 // struct file_desc *desc;
 struct svc_req *rqstp;
 {  
-  //printf("server");
+
+  // printf("server: get: %s\n", desc->filename);
+
   //printf("file: %s", desc->filename);
   static struct file_part fpart;
 
-  // char *curr_dir;
-  // int i = getPwd(&curr_dir);
-  // if(!i){
-  //   char str[strlen(curr_dir) + strlen(desc->filename) + 1];
-  //   strcpy(str, curr_dir);
-  //   strcat(str, "/");
-  //   strcat(str, desc->filename);
-  //   FILE* f = NULL;
-  //   errno = 0;
-  //   printf("file: %s", str);
-  //   f = fopen(str, "rb");
-  //   if(f != NULL){
-  //     fseek(f, 0, SEEK_END);
-  //     int size = ftell(f);
-  //     rewind(f);
-  //     if(desc->offset > size) {
-  //       //TODO : error
-  //     }
+  // exit(1);
+  char *curr_dir;
+  int i = getPwd(&curr_dir);
+  if(!i){
+    char str[strlen(curr_dir) + strlen(desc->filename) + 1];
+    strcpy(str, curr_dir);
+    strcat(str, "/");
+    strcat(str, desc->filename);
+    FILE* f = NULL;
+    errno = 0;
+    // printf("file: %s\n", str);
+    //exit(1);
+    f = fopen(str, "rb");
+    if(f != NULL){
+      fseek(f, 0, SEEK_END);
+      int size = ftell(f);
+      rewind(f);
+      if(desc->offset > size) {
+        //TODO : error
+      }
 
-  //     fseek(f, desc->offset, SEEK_SET);
-  //     unsigned char part[PSIZE];
-  //     int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
-  //     printf("part: %s", part);
-  //     fpart.chunck = part;
-  //     if(strlen(part)<PSIZE || ftell(f)==size){
-  //       fpart.last = strlen(part);
-  //     } else {
-  //       fpart.last = 0;
-  //     }
-  //   }
-  //   fclose(f);
-  // }
+      fseek(f, desc->offset, SEEK_SET);
+      static char part[PSIZE];
+      int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+      //printf("part: %s\n", part);
+      fpart.chunck.chunck_val = part;
+      fpart.chunck.chunck_len = PSIZE;
+      // printf("Size of file: %i\n", size);
+      printf("Offset position when read: %lu\n", ftell(f));
+      if(ftell(f)==size){
+        printf("IS LAST PART\n");
+        fpart.chunck.chunck_len = size%PSIZE;
+        fpart.last = fpart.chunck.chunck_len;
+      } else {
+        fpart.last = 0;
+      }
+      fclose(f);
+    } else {
+      fpart.chunck.chunck_val = "Error: Failed to open file";
+      fpart.chunck.chunck_len = strlen(fpart.chunck.chunck_val)+1;
+      fpart.last = -fpart.chunck.chunck_len;
+    }
+  }
+  printf("chunck: %s\n", fpart.chunck.chunck_val);
+  printf("chunck last: %i\n", fpart.last);
+  //exit(1);
   return &fpart;
 }
 

@@ -1,8 +1,7 @@
 
-
 struct file_part {
-  string chunck<1024>;
-  uint32_t last;
+  opaque chunck<>;
+  int32_t last;
 };
 
 struct file_desc {

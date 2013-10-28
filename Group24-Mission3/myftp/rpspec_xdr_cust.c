@@ -8,32 +8,37 @@
 bool_t
 xdr_file_part (XDR *xdrs, file_part *objp)
 {
-	register int32_t *buf;
+  register int32_t *buf;
 
-  uint32_t sizep = PSIZE;
-  if (&objp->last == 0){
-    sizep = objp->last;
-  }
-  else if (&objp->last < 0){
+  int32_t sizep = PSIZE;
+
+  printf("xdr last: %i\n", objp->last);
+
+  int temp = objp->last;
+  if (objp->last < 0){
     sizep = -objp->last;
   }
+  if (objp->last > 0){
+    sizep = objp->last;
+  } 
+
+  printf("xdr sizep: %i\n", sizep);
 
   if (!xdr_bytes (xdrs, &objp->chunck, &sizep, PSIZE))
     return FALSE;
-  if (!xdr_int (xdrs, &objp->last))
-    return FALSE;
-	return TRUE;
+  if (!xdr_int32_t (xdrs, &objp->last))
+   return FALSE;
+  return TRUE;
 }
-
 
 bool_t
 xdr_file_desc (XDR *xdrs, file_desc *objp)
 {
   register int32_t *buf;
 
-   if (!xdr_string (xdrs, &objp->filename, ~0))
+  if (!xdr_string (xdrs, &objp->filename, ~0))
      return FALSE;
-   if (!xdr_uint32_t (xdrs, &objp->offset))
-     return FALSE;
+  if (!xdr_uint32_t (xdrs, &objp->offset))
+   return FALSE;
   return TRUE;
 }
