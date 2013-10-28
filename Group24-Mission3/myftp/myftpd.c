@@ -64,7 +64,6 @@ struct svc_req *rqstp;
 
 struct file_part *rget_1_svc(desc, rqstp)
 file_desc *desc;
-// struct file_desc *desc;
 struct svc_req *rqstp;
 {  
 
