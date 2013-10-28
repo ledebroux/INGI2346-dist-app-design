@@ -128,6 +128,8 @@ struct svc_req *rqstp;
       f = fopen(str, "ab");
     }
 
+    //todo chech the value of the offset, to know if it is well placed.
+
     int w = fwrite(fput->chunck.chunck_val, 1, fput->chunck.chunck_len, f);
     if(w != fput->chunck.chunck_len){
       printf("Error\n");

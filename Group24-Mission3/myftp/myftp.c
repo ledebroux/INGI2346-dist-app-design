@@ -1,7 +1,7 @@
 /*
  * Thibaut Knop & Lenoard Debroux
  * Group 24
- * INGI2146 - Mission 1
+ * INGI2146 - Mission 2
  * myftp.c
  */
 
