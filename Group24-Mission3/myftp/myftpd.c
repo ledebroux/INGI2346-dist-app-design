@@ -5,7 +5,6 @@
  * myftpd.c
  */
 
-#include "header.h"
 #include "utils.h"
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -23,16 +22,22 @@
 
 #define PSIZE 1024
 
+char *pwd_ini = NULL;
+
+
 char **rpwd_1_svc(none, rqstp)
 void *none;
 struct svc_req *rqstp;
 {
-  static char *curr_dir;
-  int i = getPwd(&curr_dir);
-  if(i!=0){
-    curr_dir = strerror(i);
+  if(pwd_ini == (char*) NULL){
+    int i = getPwd(&pwd_ini);
+    if(i!=0){
+      static char *curr_dir;
+      curr_dir = strerror(i);
+      return(&curr_dir);
+    }
   }
-  return(&curr_dir);
+  return(&pwd_ini);
 }
 
 struct cd_res *rcd_1_svc(arg, rqstp)
@@ -48,13 +53,6 @@ struct svc_req *rqstp;
   result.pwd = current;
   printf("Current %s", current);
   return(&result);
-
-  // static struct cd_res result;
-  // result.code = cd(arg->path, &arg->pwd);
-  // static char * current;
-  // getPwd(&current);
-  // result.pwd = current;
-  // return(&result);
 }
 
 char **rls_1_svc(pwd, rqstp)
@@ -70,13 +68,14 @@ struct svc_req *rqstp;
     if(j!=0){
       result = strerror(j);
     }
+  } else {
+    result = strerror(i);
   }
   return(&result);
 }
 
 struct file_part *rget_1_svc(desc, rqstp)
-file_desc *desc;
-// struct file_desc *desc;
+struct file_desc *desc;
 struct svc_req *rqstp;
 {  
   chdir(desc->pwd);
@@ -122,11 +121,11 @@ struct svc_req *rqstp;
 }
 
 int *rput_1_svc(fput, rqstp)
-file_put *fput;
+struct file_put *fput;
 struct svc_req *rqstp;
 {  
   chdir(fput->pwd);
-  static int result;
+  static int result = 0;
   char *curr_dir;
   int i = getPwd(&curr_dir);
   if(!i){
@@ -146,6 +145,7 @@ struct svc_req *rqstp;
     int w = fwrite(fput->chunck.chunck_val, 1, fput->chunck.chunck_len, f);
     if(w != fput->chunck.chunck_len){
       printf("Error\n");
+      result = 1;
     }
 
     fclose(f);

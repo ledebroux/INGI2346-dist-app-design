@@ -49,7 +49,7 @@ char *argv[ ];
   }
 
   while(1) {
-    printf("%s", *pwd);
+    //printf("%s", *pwd);
     printf(">> ");
 
     fgets(buffer,512,stdin);
@@ -146,7 +146,17 @@ char *argv[ ];
       break;
     }
     
-
+    /**
+    Remote procedure: get
+    The remote procedure is called with a file_desc as argument.
+    it states the filename and an offset.
+    Upon receiving a chunck of the file, 
+    the method is called again if the chunck wasn't the last.
+    For the successive calls, the offset value is updated so that
+    the server knows where to begin the new chunck.
+    The client doesn't need to know in advance the size of chuncks
+    used by the server.
+    */
     else if(cmdcmp("get", buffer)){
       char* arg;
       getArg("get", buffer, &arg);
@@ -157,6 +167,7 @@ char *argv[ ];
       desc.pwd = *pwd;
       struct file_part *result;
 
+      // reception of the first chunck
       result = rget_1(&desc, cl);
       if(result == (file_part*) NULL){
         clnt_perror(cl,argv[1]);
@@ -171,9 +182,12 @@ char *argv[ ];
         if(!i){
           char str[strlen(curr_dir) + strlen(arg) + 1];
           concatCustom(str, curr_dir, arg);
+
+          // local file creation
           FILE* f = NULL;
           f = fopen(str, "wb+");
           
+          //reception of the following chuncks
           while((int)result->last == 0){
             fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
             desc.offset = desc.offset + result->chunck.chunck_len;
@@ -186,7 +200,14 @@ char *argv[ ];
       free(arg);
     }
 
-
+    /**
+    Remote procedure: put
+    To perform such an operation, serveral packets must be send to the server
+    For that, serveral calls to a put remote procedure are made.
+    A check is done server side to avoid two client to write the same file 
+    and thus create conflicts.
+    The server doesn't need to know in advance the size of the chuncks
+    */
     else if(cmdcmp("put", buffer)){
       char* arg;
       getArg("get", buffer, &arg);
@@ -201,12 +222,12 @@ char *argv[ ];
         char str[strlen(curr_dir) + strlen(arg) + 1];
         concatCustom(str, curr_dir, arg);
 
+        // local file opening
         FILE* f = NULL;
         f = fopen(str, "rb");
 
-        errno = 0;
-
         if(f != NULL){
+          //Size of the file
           fseek(f, 0, SEEK_END);
           int size = ftell(f);
           rewind(f);
@@ -214,6 +235,8 @@ char *argv[ ];
           //Number of full packets
           int nb_packets = size/PSIZE;
           int j;
+
+          //Sending all packets that have full size
           for(j = 0; j<nb_packets; j++){
             char part[PSIZE];
             int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
@@ -221,13 +244,22 @@ char *argv[ ];
             fput.chunck.chunck_len = PSIZE;
             fput.offset = j*PSIZE;
             int *r = rput_1(&fput, cl);
+            if(*r != 0){
+              printf("Error: failed to write correctly server-side");
+            }
           }
 
-          char part[size%PSIZE];
-          int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
-          fput.chunck.chunck_val = part;
-          fput.chunck.chunck_len = size%PSIZE;
-          int *r = rput_1(&fput, cl);
+          //Sending the last chunck of needed
+          if(size%PSIZE != 0){
+            char part[size%PSIZE];
+            int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+            fput.chunck.chunck_val = part;
+            fput.chunck.chunck_len = size%PSIZE;
+            int *r = rput_1(&fput, cl);
+            if(*r != 0){
+              printf("Error: failed to write correctly server-side");
+            }
+          }
 
           fclose(f);
         } else {
