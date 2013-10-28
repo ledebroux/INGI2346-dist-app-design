@@ -78,7 +78,11 @@ By examining the code, one can observe that we are calling \verb@PWD@ remote pro
 
 \section{Presentation}
 \subsection{Communication protocol between the client and the server}
-
+Here shall we explain the different remote procedure. For \verb@get@, \verb@ls@ and \verb@put@, please refer to section 1.2.
+\begin{itemize}
+\item \verb@rpwd_1_svc@ : is called upon a client connection. This procedure informs the client of the initial directory. Note that, as explained in section 1.3, the client don't have to perform remote call to\verb@rpwd_1_svc@.
+\item \verb@rcd_1_svc@ : performs the change of directory and returns a \verb@cd_res@ structure containing the new current directory, as well as a \verb@int@ representing the error code if any.
+\end{itemize}
 \subsection{User guides of the client and server}
 \begin{description}
 \item[Server] The only command you can perform for the server is to run it by launching \verb@./myftpd@. All the commands are sent remotely by the client.
