@@ -53,14 +53,18 @@ There are 2 types of actions possible for the client (\verb@myftp.c@) :
 \end{enumerate}
 
 \subsection{Organisation of the transfer between client and server of data of unspecified length as parameters and results of remote procedure calls}
+Concerning the reading of directory, for the \verb@ls@ remote procedure call, we choose to return a string containing all the content of the repertory.\\
+
+Concerning the files however, it is a bit more complicated : 
 
 
 \subsection{How to support simultaneous clients ?}
 At first view, we thought we had different options to support simultaneous clients :
 \begin{enumerate}
 \item Keep a dictionary on the server side containing the state (i.e the current directory) for each client. At each remote procedure call from a client, just look-up in the dictionary to retrieve the state of the connection. However, this solution was totally not possible due the architecture of the RPC model : indeed, the server don't maintain any information about the clients remotely calling procedures. Actually, it is the job of the \verb@PortMapper@ locate the remote procedures on a particular host.
-\item Another solution is 
+\item Another solution is to send the current state at each remote procedure call. For that purpose, we modified our data structures in the RPCL file by adding a \verb@string pwd<>@ field in almost each structure. Then for all remote procedure call, the client is sending its own server environment (i.e the current directory the server should have if the client was the only one). However, one question remains : how to initialize a new state when a new client call for a remote procedure? To address this issue, upon the first client connection, the initial directory of the server is stored in a variable, and each new client will get that value upon their connection so that each client begins with the same working directory.
 \end{enumerate}
+By examining the code, one can observe that we are calling \verb@PWD@ remote procedures, with the actually current directory in the argument. This is because we hadn't decided yet how to support simultaneous clients. If the solution we choose is the right one, it should be obvious that remotely calling for getting the current directory while we already have it is totally useless.
 
 \section{Presentation}
 \subsection{Communication protocol between the client and the server}
