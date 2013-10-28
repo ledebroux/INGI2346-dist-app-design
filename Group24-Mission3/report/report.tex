@@ -55,9 +55,19 @@ There are 2 types of actions possible for the client (\verb@myftp.c@) :
 \subsection{Organisation of the transfer between client and server of data of unspecified length as parameters and results of remote procedure calls}
 Concerning the reading of directory, for the \verb@ls@ remote procedure call, we choose to return a string containing all the content of the repertory.\\
 
-Concerning the files however, it is a bit more complicated : 
+Concerning the files however, it is a bit more complicated : when a client wants to retrieve a file, he remotely calls for the \verb@rget_1@ procedure with a \verb@file_desc@ structure as argument. This structure contains the filename as well as an offset. The procedure reads \verb@PSIZE@ bytes (specified in the server code) from the specified file from the specified offset. It returns a \verb@file_part@ structure containing 
+\begin{itemize}
+\item An \verb@int@ indicating if it is the last chunk of the file or not : more precisely, this \verb@int@ contains always 0, unless there is an error or this is the last chunk of the file. In the former case, then the \verb@int@ contains the length of the error string, and in the former, it contains the length of the chunk. This allows the client to know that it is the last chunk, even the length of this chunk is, by chance, the same length as the previous chunk.
+\item The content of the chunk it reads, with an opaque type. The opaque type is used in RPCL to describe untyped data, that is, sequences of arbitrary bytes. We couldn't choose the string type since a file can contains a 0-valued byte, and this byte in a string is considered as the end of the string. This chunk is a structure itself, containing the length of the read data as well as the data.
+\end{itemize}
 
+When receiving the answer, the client thus know if it was the last chunk or not. If not, he calls again for the 
+ \verb@rget_1@ remote procedure but with the offset correctly set, and so on, until he receives the last chunk.\\
+ 
+Note that the size of packets used by the server and the client can be different, since the length are included in the data structures returned by the remote procedures.\\
 
+To choose the correct size of chunks, we thought that to big chunks will require to much memory as well as prevent multiple users to simultaneously retrieve a file : a second but later user should wait for the first transfer to be completed. Bigger the chunk is, more the later client should wait. By choosing for chunk of 1024 bytes, we ensure a certain fairness between the users. On the opposite, choosing to small packets could overflow the network quickly, which is not valuable.
+ 
 \subsection{How to support simultaneous clients ?}
 At first view, we thought we had different options to support simultaneous clients :
 \begin{enumerate}
