@@ -19,9 +19,8 @@
 #include <rpc/rpc.h>
 #include "rpspec.h"
 #include <unistd.h>
-//#define M2_ADDR "130.104.172.88"
-//#define M2_ADDR "127.0.0.1"
 
+#define PSIZE 1024
 
 main(argc,argv)
 int argc;
@@ -124,7 +123,7 @@ char *argv[ ];
         printf("chunck: %s\n", result->chunck.chunck_val);
       } else {
         FILE* f = NULL;
-        f = fopen(arg, "wb");
+        f = fopen(arg, "wb+");
         
         while((int)result->last == 0){
           fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
@@ -138,7 +137,54 @@ char *argv[ ];
 
 
     else if(cmdcmp("put", buffer)){
-      
+      char* arg;
+      getArg("get", buffer, &arg);
+      struct file_put fput;
+
+      fput.filename = arg;
+
+      char *curr_dir;
+      int i = getPwd(&curr_dir);
+      if(!i){
+        char str[strlen(curr_dir) + strlen(arg) + 1];
+        strcpy(str, curr_dir);
+        strcat(str, "/");
+        strcat(str, arg);
+
+        FILE* f = NULL;
+        f = fopen(str, "rb");
+
+        errno = 0;
+
+        if(f != NULL){
+          fseek(f, 0, SEEK_END);
+          int size = ftell(f);
+          rewind(f);
+
+          //Number of full packets
+          int nb_packets = size/PSIZE;
+          int j;
+          for(j = 0; j<nb_packets; j++){
+            char part[PSIZE];
+            int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+            printf("offset: %s\n", part);
+            fput.chunck.chunck_val = part;
+            fput.chunck.chunck_len = PSIZE;
+            fput.offset = j*PSIZE;
+            int *r = rput_1(&fput, cl);
+          }
+
+          char part[size%PSIZE];
+          int n = fread(part, sizeof(part[0]), sizeof(part)/sizeof(part[0]), f);
+          fput.chunck.chunck_val = part;
+          fput.chunck.chunck_len = size%PSIZE;
+          int *r = rput_1(&fput, cl);
+
+          fclose(f);
+        } else {
+          printf("Error: Failed to open file");
+        }
+      }
     }
 
 

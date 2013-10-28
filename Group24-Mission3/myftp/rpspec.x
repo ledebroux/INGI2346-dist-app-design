@@ -9,6 +9,11 @@ struct file_desc {
   uint32_t offset;
 };
 
+struct file_put {
+  opaque chunck<>;
+  string filename<>;
+  int32_t offset;
+};
 
 program PROG {
   version VERS {
@@ -16,5 +21,6 @@ program PROG {
     int32_t RCD(string) = 2;
     string RLS(void) = 3;
     file_part RGET(file_desc) = 4;
+    int32_t RPUT(file_put) = 5;
   } = 1;
 } = 0x12345688;
