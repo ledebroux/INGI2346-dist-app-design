@@ -1,7 +1,7 @@
 /*
  * Thibaut Knop & Lenoard Debroux
  * Group 24
- * INGI2146 - Mission 1
+ * INGI2146 - Mission 2
  * myftpd.c
  */
 
@@ -68,26 +68,22 @@ file_desc *desc;
 struct svc_req *rqstp;
 {  
 
-  // printf("server: get: %s\n", desc->filename);
-
-  //printf("file: %s", desc->filename);
   static struct file_part fpart;
 
   char *curr_dir;
   int i = getPwd(&curr_dir);
   if(!i){
     char str[strlen(curr_dir) + strlen(desc->filename) + 1];
-    strcpy(str, curr_dir);
-    strcat(str, "/");
-    strcat(str, desc->filename);
+    concatCustom(str, curr_dir, desc->filename);
+
     FILE* f = NULL;
-    errno = 0;);
+    errno = 0;
     f = fopen(str, "rb");
     if(f != NULL){
       fseek(f, 0, SEEK_END);
       int size = ftell(f);
       rewind(f);
-      
+
       if(desc->offset > size) {
         //TODO : error
       }
@@ -117,15 +113,12 @@ int *rput_1_svc(fput, rqstp)
 file_put *fput;
 struct svc_req *rqstp;
 { 
-  printf("put function\n");
   static int result;
   char *curr_dir;
   int i = getPwd(&curr_dir);
   if(!i){
     char str[strlen(curr_dir) + strlen(fput->filename) + 1];
-    strcpy(str, curr_dir);
-    strcat(str, "/");
-    strcat(str, fput->filename);
+    concatCustom(str, curr_dir, fput->filename);
 
     FILE* f = NULL;
 

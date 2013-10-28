@@ -235,9 +235,10 @@ int cd(char* dir, char** path){
       }
       temp[i] = 0;
       char str[strlen(temp) + strlen(*path) + 1];
-      strcpy(str, *path);
-      strcat(str, "/");
-      strcat(str, temp);
+      concatCustom(str, *path, temp);
+      // strcpy(str, *path);
+      // strcat(str, "/");
+      // strcat(str, temp);
       *path = malloc(strlen(str)+1);
       strcpy(*path,str);
     }
@@ -247,9 +248,10 @@ int cd(char* dir, char** path){
     }
   } else if(startsWith(dir,"/") == 0){
     char str[strlen(dir) + strlen(*path) + 1];
-    strcpy(str, *path);
-    strcat(str, "/");
-    strcat(str, dir);
+    concatCustom(str, *path, dir);
+    // strcpy(str, *path);
+    // strcat(str, "/");
+    // strcat(str, dir);
     *path = malloc(strlen(str)+1);
     strcpy(*path,str);
   } else {

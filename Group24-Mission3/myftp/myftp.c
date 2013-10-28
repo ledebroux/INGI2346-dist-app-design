@@ -47,17 +47,41 @@ char *argv[ ];
 
 
     if(cmdcmp("lpwd", buffer)){
-
+      char *curr_dir;
+      int i = getPwd(&curr_dir);
+      if(!i){
+        printf("%s\n", curr_dir);
+      } else {
+        fprintf(stderr, "Error : %s\n",strerror(i));
+      }
     }
 
 
     else if(cmdcmp("lcd", buffer)){
-
+      char * current;
+      int i = getPwd(&current);
+      char* arg;
+      getArg("lcd", buffer, &arg);
+      int j = cd(arg, &current);
+      free(arg);
+      if (j!=0){
+        fprintf(stderr, "Error : %s\n",strerror(j));
+      }
     }
 
 
     else if(cmdcmp("lls", buffer)){
-
+      char *current;
+      int i = getPwd(&current);
+      if (i==0){
+        char *result;
+        int j = getLs(current, &result, 1);
+        if(j!=0){
+          fprintf(stderr, "Error : %s\n",strerror(j));
+        }
+      } else {
+        fprintf(stderr, "Error : %s\n",strerror(i));
+      }
     }
 
     /**
@@ -109,6 +133,7 @@ char *argv[ ];
       char* arg;
       getArg("get", buffer, &arg);
       struct file_desc desc;
+
       desc.filename = arg;
       desc.offset = 0;
       struct file_part *result;
@@ -122,16 +147,22 @@ char *argv[ ];
         //error from server
         printf("chunck: %s\n", result->chunck.chunck_val);
       } else {
-        FILE* f = NULL;
-        f = fopen(arg, "wb+");
-        
-        while((int)result->last == 0){
+        char *curr_dir;
+        int i = getPwd(&curr_dir);
+        if(!i){
+          char str[strlen(curr_dir) + strlen(arg) + 1];
+          concatCustom(str, curr_dir, arg);
+          FILE* f = NULL;
+          f = fopen(str, "wb+");
+          
+          while((int)result->last == 0){
+            fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
+            desc.offset = desc.offset + result->chunck.chunck_len;
+            result = rget_1(&desc, cl);
+          }
           fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
-          desc.offset = desc.offset + result->chunck.chunck_len;
-          result = rget_1(&desc, cl);
+          fclose(f);
         }
-        fwrite(result->chunck.chunck_val, 1, result->chunck.chunck_len, f);
-        fclose(f);
       }
     }
 
@@ -147,9 +178,7 @@ char *argv[ ];
       int i = getPwd(&curr_dir);
       if(!i){
         char str[strlen(curr_dir) + strlen(arg) + 1];
-        strcpy(str, curr_dir);
-        strcat(str, "/");
-        strcat(str, arg);
+        concatCustom(str, curr_dir, arg);
 
         FILE* f = NULL;
         f = fopen(str, "rb");
