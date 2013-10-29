@@ -1,7 +1,4 @@
-MYFTP : rpcgen myftp myftpd
-
-rpcgen : rpspec.x
-	rpcgen rpspec.x
+MYFTP : myftp myftpd
 
 myftp : myftp.c utils.c rpspec_clnt.c rpspec_xdr.c utils.h
 	gcc utils.c myftp.c rpspec_clnt.c rpspec_xdr.c -o myftp -lnsl
