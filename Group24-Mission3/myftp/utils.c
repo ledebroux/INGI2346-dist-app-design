@@ -6,7 +6,6 @@
  */
 
 
-#include "header.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -78,48 +77,6 @@ int getArg(char* cmd, char* str, char** arg_result){
   }
   return errno;
 }
-
-/*
- * Sugar for the sending of a message msg on the socket designated by its
- * socket descriptor s 
- */
- int sendMsg(char* msg, int s){
-  errno = 0;
-  write(s, msg, strlen(msg)+1);
-  return errno;
-}
-
-/*
- * Sugar for the sending of a header h  on the socket designated by its
- * socket descriptor s .
- $ h is a of a msgHeader type, see in header.h for definition
- */
-int sendHeader(msgHeader* h, int s){
-  errno = 0;
-  write(s, h, sizeof(h));
-  return errno;
-}
-
-/*
- * Sugar for defining a header and sending it on the socket designated
- * by its socket descriptor s.
- * type and length are the fields the structure msgHeader h.
- *
- * To avoid any errors due to the endianness used by the operating system
- * we convert the int in the structure msgHeader from the host layer to the 
- * network layer thanks to the function htonl()
- * Upon receiving a header, the inverse conversion must be done, thanks
- * to ntohl().
- * It is done in myftp.c and myftpd.c
- */
-int sendType(int s, int type, int length) {
-  msgHeader h;
-  h.length = htonl(length);
-  h.type = htonl(type);
-  int result = sendHeader(&h, s);
-  return result;
-}
-
 
 /*
  * concatCustom copy begin in str, then concat it with / and end

@@ -44,12 +44,12 @@
 \section{Discussion}
 
 \subsection{Allocation of the various functions to the server and to the client}
-Thanks to the RPC model, we can call procedure outside of the application address space. For that purpose, we have to specify the data structure used as argument or return value of the remote procedures in the RPCL file (\verb@rpspec.x@), the \verb@main@ method of the client, as well as the remote procedures executed by the server side. \verb@RPCGEN@ help us by generating the code to handle the connections and exchange of data between the client and the remote process.\\
+Thanks to the RPC model, we can call procedures outside of the application address space. For that purpose, we have to specify the data structure used as argument and/or return value of the remote procedures in the RPCL file (\verb@rpspec.x@), the \verb@main@ method of the client, as well as the remote procedures executed by the server side. \verb@RPCGEN@ help us by generating the code to handle the connections and exchange of data between the client and the remote process.\\
 
 There are 2 types of actions possible for the client (\verb@myftp.c@) :
 \begin{enumerate}
-\item Perform a local command : the main directly utilizes the auxiliary functions that perform the requests and described in \verb@utils.c@
-\item Perform a remote command on the server : the client call the remote procedures defined on the server side (\verb@myftpd.c@) thanks to the RPC model. The server side will call the auxiliary functions that perform the requests, as described in \verb@utils.c@.
+\item Perform a local command : the client directly utilizes the auxiliary functions that perform the requests and described in \verb@utils.c@
+\item Perform a remote command on the server : the client calls the remote procedures defined on the server side (\verb@myftpd.c@) thanks to the RPC model. The server side will call the auxiliary functions that perform the requests, as described in \verb@utils.c@.
 \end{enumerate}
 
 \subsection{Organisation of the transfer between client and server of data of unspecified length as parameters and results of remote procedure calls}
@@ -58,20 +58,20 @@ There are 2 types of actions possible for the client (\verb@myftp.c@) :
 
 \paragraph{get} Concerning the files however, it is a bit more complicated : when a client wants to retrieve a file, he remotely calls for the \verb@rget_1@ procedure with a \verb@file_desc@ structure as argument. This structure contains the filename as well as an offset. The procedure reads \verb@PSIZE@ bytes (specified in the server code) from the specified file from the specified offset. It returns a \verb@file_part@ structure containing 
 \begin{itemize}
-\item An \verb@int@ indicating if it is the last chunk of the file or not : more precisely, this \verb@int@ contains always 0, unless there is an error or this is the last chunk of the file. In the former case, then the \verb@int@ contains the opposite of the length of the error string (and thus is negative), and in the latter case, it contains the length of the chunk. This allows the client to know that it is the last chunk, even if the length of this chunk is, by chance, the same length as the previous chunk.
+\item An \verb@int@ indicating if it is the last chunk of the file or not : more precisely, this \verb@int@ contains always 0, unless there is an error or this is the last chunk of the file. In the former case, then the \verb@int@ contains the opposite of the length of the error string (and thus is negative), and in the latter case, it contains the length of the chunk. This allows the client to know that it is the last chunk, even if the length of this chunk is, by chance, equal to \verb@PSIZE@.
 \item The content of the chunk it reads, with an opaque type. The opaque type is used in RPCL to describe untyped data, that is, sequences of arbitrary bytes. We couldn't choose the string type since a file can contains a 0-valued byte, and this byte in a string is considered as the end of the string. This chunk is a structure itself, containing the length of the read data as well as the data. That length is usefull for the client to know the packet size used by the server.
 \end{itemize}
 
-When receiving the answer, the client thus know if it was the last chunk or not. If not, he calls again for the 
+When receiving the answer, the client thus knows if it was the last chunk or not. If not, he calls again for the 
  \verb@rget_1@ remote procedure but with the offset correctly set, and so on, until he receives the last chunk.\\
  
 Note that the size of packets used by the server and the client can be different, since the length are included in the data structures returned by the remote procedures.\\
 
-To choose the correct size of chunks, we thought that too big chunks will require to much memory as well as prevent multiple users to simultaneously retrieve a file : a second but later user should wait for the first transfer to be completed. Bigger the chunk is, more the later client should wait. By choosing for chunk of 1024 bytes, we ensure a certain fairness between the users. On the opposite, choosing to small packets could overflow the network quickly, which is not valuable.
+To choose the correct size of chunks, we thought that too big chunks will require too much memory as well as prevent multiple users to simultaneously retrieve a file : a second but later user should wait for the first transfer to be completed. Bigger the chunk is, more the later client must wait. By choosing for chunk of 1024 bytes, we ensure a certain fairness between the users. On the opposite, choosing too small packets could overflow the network quickly, which is not valuable.
 
 \paragraph{put} Regarding the \verb@put@ remote call, it performs similarily to \verb@get@, that is, several packets are send to the server. A structure \verb@file_put@ is used and contains the filename, a chunck as well as an offset.\\
 
-Server-side, if the offset in the argument is zero, a new file is created, if not, the correct file is opened in append mode. The value of the offset in the file that is opened server-side is checked in order to make sure that there is not two users writing a same file at the same time.\\
+Server-side, if the offset in the argument is zero, a new file is created, if not, the correct file is opened in \verb@append@ mode. The value of the offset in the file that is opened server-side is checked in order to make sure that there is not two users writing a same file at the same time.\\
 
 The execution of a \verb@put@ command requieres as many distant calls as there are chuncks in the file. The size of the chuncks is set client-side and doesn't need to be explicitely known by the server.
  
