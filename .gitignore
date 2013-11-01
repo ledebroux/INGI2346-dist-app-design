@@ -10,3 +10,7 @@ rpspec.h
 *_clnt.c
 *_svc.c
 *_xdr.c
+.classpath
+.project
+.settings/*
+*.class
