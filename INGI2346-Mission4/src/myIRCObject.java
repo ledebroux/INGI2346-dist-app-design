@@ -1,4 +1,4 @@
-package irc;
+
 
 public class myIRCObject
 	extends java.rmi.server.UnicastRemoteObject 
@@ -8,4 +8,10 @@ public class myIRCObject
         throws java.rmi.RemoteException {
         super();
     }
+	
+	public int print(int a)
+		throws java.rmi.RemoteException {
+		System.out.println("Kikoo " + a);
+		return 1;
+	}
 }
