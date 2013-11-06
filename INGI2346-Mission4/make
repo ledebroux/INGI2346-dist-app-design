@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd src
+rm *.class
+rm *_Stub.java
+
+javac myIRCObject.java
+rmic -keep myIRCObject
+javac myIRCServer.java
+javac myIRC.java
