@@ -7,10 +7,19 @@ import java.rmi.RemoteException;
 
 public class myIRC {
 	public static void main(String[] args) {
+		
+		String name = args[1];
+		
 		try {
 			myIRCInterface c = 
 					(myIRCInterface)Naming.lookup("rmi://localhost:1099/myIRC");
-			System.out.println(c.print(42));
+			myIRCCallbackImpl callbackObj = 
+					new myIRCCallbackImpl();
+			c.connect(name, callbackObj);
+			System.out.println(c.who().toString());
+			c.sendMsg(name, name, "Hello me!");
+			//c.who();
+			System.exit(0);
 		}
 		catch (MalformedURLException murle) {
 			System.out.println();
