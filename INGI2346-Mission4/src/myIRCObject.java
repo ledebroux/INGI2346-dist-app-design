@@ -17,13 +17,17 @@ implements myIRCInterface {
 		super();
 	}
 
-	public void connect(String name, myIRCCallbackInterface callbackObj)
+	public boolean connect(String name, myIRCCallbackInterface callbackObj)
 			throws java.rmi.RemoteException {
 		//TODO : make sure that the client does't already exist
 		// return a value to inform of the status
+		if(clients.containsKey(name)){
+			return false;
+		}
 		clients.put(name, callbackObj);
 		clientList.add(name);
 		System.out.println("New client: " + name);
+		return true;
 	}
 
 	public void disconnect(String name)
@@ -38,10 +42,12 @@ implements myIRCInterface {
 		return clientList;
 	}
 
-	public void sendMsg(String dest, String sender, String msg) 
+	public boolean sendMsg(String dest, String sender, String msg) 
 			throws RemoteException {
 		if(clients.containsKey(dest)){
 			clients.get(dest).receiveMsg(msg, sender);
+			return true;
 		}
+		return false;
 	}
 }
