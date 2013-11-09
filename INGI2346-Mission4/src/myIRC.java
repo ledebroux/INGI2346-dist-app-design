@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Scanner;
 
 public class myIRC {
 	
@@ -11,17 +12,26 @@ public class myIRC {
 	static myIRCInterface c;
 	static myIRCCallbackImpl callbackObj;
 	
+	static String cmd; 
+	static Scanner scanIn;
+	
 	public static void main(String[] args) {
 		
 		name = args[1];
+		scanIn = new Scanner(System.in);
 		
 		try {
 			c = (myIRCInterface)Naming.lookup("rmi://localhost:1099/myIRC");
 			connect();
-			who();
-			sendMsg(name, "Hello me!");
-			disconnect();
-			//System.exit(0);
+			while(true){
+				System.out.println("Enter a command");
+				cmd = scanIn.nextLine();
+				//if()
+				System.out.println(cmd);
+			}
+//			who();
+//			sendMsg(name, "Hello me!");
+//			disconnect();
 		}
 		catch (MalformedURLException murle) {
 			System.out.println();
@@ -71,6 +81,7 @@ public class myIRC {
 	public static void disconnect(){
 		try {
 			c.disconnect(name);
+			scanIn.close();
 			System.exit(0);
 		} catch (RemoteException re) {
 			System.out.println();
