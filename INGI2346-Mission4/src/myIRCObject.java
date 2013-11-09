@@ -35,6 +35,9 @@ implements myIRCInterface {
 		clients.remove(name);
 		clientList.remove(name);
 		System.out.println("Client left: " + name);
+		for(myIRCCallbackInterface c: clients.values()) {
+			c.left(name);
+		}
 	}
 	
 	public ArrayList<String> who()

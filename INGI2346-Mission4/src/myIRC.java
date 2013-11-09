@@ -14,6 +14,8 @@ public class myIRC {
 	
 	static String cmd; 
 	static Scanner scanIn;
+	static String to;
+	static String msg;
 	
 	public static void main(String[] args) {
 		
@@ -23,11 +25,27 @@ public class myIRC {
 		try {
 			c = (myIRCInterface)Naming.lookup("rmi://localhost:1099/myIRC");
 			connect();
+			who();
 			while(true){
-				System.out.println("Enter a command");
+				System.out.print("#");
 				cmd = scanIn.nextLine();
-				//if()
-				System.out.println(cmd);
+				if(cmd.equals("who")){
+					who();
+				} 
+				else if(cmd.equals("quit")) {
+					disconnect();
+				}
+				else if(cmd.equals("msg")) {
+					System.out.print("To: ");
+					to = scanIn.nextLine();
+					System.out.print("Message: ");
+					msg = scanIn.nextLine();
+					sendMsg(to, msg);
+				}
+				else {
+					System.out.println("Unknown command");
+				}
+				//System.out.println(cmd);
 			}
 //			who();
 //			sendMsg(name, "Hello me!");
@@ -107,6 +125,7 @@ public class myIRC {
 	
 	public static void who(){
 		try {
+			System.out.println("Connected users:");
 			System.out.println(c.who().toString());
 		} catch (RemoteException re) {
 			System.out.println();
