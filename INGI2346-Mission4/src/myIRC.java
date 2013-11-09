@@ -111,9 +111,14 @@ public class myIRC {
 	
 	public static void sendMsg(String dest, String msg){
 		try {
-			boolean result = c.sendMsg(dest, name, "Hello me!");
-			if(!result){
-				System.out.println("Message to " + dest + " could not be delivered.");
+			if(dest.equals(name)){
+				System.out.println("From me: " + msg);
+			}
+			else {
+				boolean result = c.sendMsg(dest, name, msg);
+				if(!result){
+					System.out.println("Message to " + dest + " could not be delivered.");
+				}
 			}
 		} catch (RemoteException re) {
 			System.out.println();

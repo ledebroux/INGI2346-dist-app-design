@@ -24,6 +24,9 @@ implements myIRCInterface {
 		if(clients.containsKey(name)){
 			return false;
 		}
+		for(myIRCCallbackInterface c: clients.values()) {
+			c.arrived(name);
+		}
 		clients.put(name, callbackObj);
 		clientList.add(name);
 		System.out.println("New client: " + name);
