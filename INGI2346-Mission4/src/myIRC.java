@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class myIRC {
@@ -131,7 +133,12 @@ public class myIRC {
 	public static void who(){
 		try {
 			System.out.println("Connected users:");
-			System.out.println(c.who().toString());
+			String[] users = c.who().toArray(new String[1]);
+			Arrays.sort(users);
+			for(String u: users){
+				System.out.println(u);
+			}
+			//System.out.println(c.who().toString());
 		} catch (RemoteException re) {
 			System.out.println();
 			System.out.println(
