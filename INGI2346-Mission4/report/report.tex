@@ -44,13 +44,36 @@
 \section{Discussion}
 
 \subsection{Allocation of the various functions to the server and to the client}
+\paragraph{Server side}
+An object \verb@myIRCObject@ is created and have the following methods that the client can call on : 
+\begin{itemize}
+\item \verb@connect(name,callbackObj)@ : Add the new client to the server and notices the other clients of the new arrival.
+\item \verb@disconnect(name)@ : Remove the client from the server and notices the others clients of the departure.
+\item \verb@sendMsg(dest,sender,msg)@ : Send a message \verb@msg@ from \verb@sender@ to \verb@dest@.
+\item \verb@who@ : Returns the list of the connected clients.
+\end{itemize}
+
+\paragraph{Client side}
+An object \verb@myIRCCallbackImpl@ is created that assumes the following methods :
+\begin{itemize}
+\item \verb@receiveMsg(msg,sender)@ : displays the message \verb@msg@ that was sent by \verb@sender@.
+\item \verb@left(user)@ : prints that \verb@user@ has left.
+\item \verb@arrived(user)@ : prints that \verb@user@ has arrived.
+\end{itemize}
+
+The implementation details are available in the comments in the code.
+
 \subsection{Communication protocol between the client and the IRC server}
+
+The client is able to communicate with the server thanks to its object that it has bond.\\
+Upon the call to \verb@connect@, the client sends its own \verb@myIRCCallbackImpl@ object that the server can use to reach the client. Technically speaking, the \verb@myIRCCallbackImpl@ objects are stored by the server in a \verb@hashmap@ whose keys are the name of the client.
+
 \subsection{User guides of the client and server}
 Following the requirements, the server is launched by \verb@java myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
 
 The client can be used as follows : 
 \begin{itemize}
-\item To start a client please launch it with \verb@java myIRC IPServer ClientName@ by providing the ip address of the server machine, as well as a name for the client. If no name is provided, the application will automatically provides one (\verb@Guest#NumberOfGuest@).
+\item To start a client please launch it with \verb@java myIRC IPServer ClientName@ by providing the ip address of the server machine, as well as a name for the client. If no name is provided, the application will automatically provides one (\verb@guest#RandomNumber@).
 \item When a new client connect to the IRC chat, all the already connected clients receive information about the new entrant.
 \item To ask for the list of connected members, client can send the command \verb@who@, which returns the set of all members participating in the chat session.
 \item To quit the chat session, the client send the command \verb@quit@. All the others members receives the disconnection notice.
@@ -58,14 +81,14 @@ The client can be used as follows :
 \end{itemize}
 
 \subsection{The source code directory and instruction for building the executable files}
-In the \verb@etc@ folder, here are the files you can find : 
+In the \verb@src@ folder, here are the files you can find : 
 \begin{description}
-\item[myIRC.java]
-\item[myIRCCallbackInterface.java]
-\item[myIRCCallbackImpl.java]
-\item[myIRCInterface.java]
-\item[myIRCObject.java]
-\item[myIRCServer.java]
+\item[myIRC.java] Contains the code that connects the client and then listens to the commands typed by the clients.
+\item[myIRCCallbackInterface.java] Contains the interface for the callback object. The in-defined methods are those to be called by the server whenever it wants to communicate with a specific client.
+\item[myIRCCallbackImpl.java] Contains the implementation of the interface specified above.
+\item[myIRCInterface.java] Contains the interface for the remote classe. The methods that will be implemented are those called by the client to perform the corresponding actions.
+\item[myIRCObject.java] Contains the implementation of the interface specified above. Its methods are called by the clients.
+\item[myIRCServer.java] Contains the code for the server that creates the object \verb@myIRCObject@ and register it to the \verb@rmiregistry@, by identify the object with a URL. 
 \end{description}
 
 To build the executable files, please execute the script \verb@make@ that you can find at the root of the directory (\verb@./make@). The \verb@make@ file compiles \verb@myIRCObject.java@, \verb@myIRCCallbackImpl@, \verb@myIRCServer.java@ and \verb@myIRC.java@. It also generates the codes for the client stub using \verb@rmic myIRC@.\\
@@ -73,7 +96,7 @@ To build the executable files, please execute the script \verb@make@ that you ca
 To try the program, please launch \verb@./make@, then start \verb@rmiregistry@ if it is not running yet, start the server with \verb@java myIRCServer &@ and finally start one or more clients \verb@java myIRC IPServer nameOfClient@.
 
 \subsection{Commented listings of the programs}
-Here are all the file for \verb@myIRC@ to work. For convenience, we included the generated files.
+Here are all the file for \verb@myIRC@ to work.
 
 \subsubsection{Server files}~
 	\lstinputlisting{../src/myIRCObject.java}
