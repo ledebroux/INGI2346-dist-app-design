@@ -21,11 +21,15 @@ implements myIRCInterface {
 
 	public String connect(String name, myIRCCallbackInterface callbackObj)
 			throws java.rmi.RemoteException {
+		String res;
 		if(clients.containsKey(name)){
 			return "failed";
 		}
 		if(name == null){
 			name = randomName();
+			res = name;
+		} else {
+			res = "success";
 		}
 		for(String c: clients.keySet().toArray(new String[0])) {
 			try {
@@ -41,7 +45,7 @@ implements myIRCInterface {
 		clients.put(name, callbackObj);
 		clientList.add(name);
 		System.out.println("New client: " + name);
-		return "success";
+		return res;
 	}
 
 	public void disconnect(String name)
