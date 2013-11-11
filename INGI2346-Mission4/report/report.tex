@@ -1,0 +1,90 @@
+\documentclass{article}
+
+\input{header.tex}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        {\huge LINGI2346 - Distributed application design}\\
+        \vspace{0.4cm}
+        
+        {\Large {Teacher : Marc Lobelle}}\\
+        \vspace{0.6cm}
+        
+        {\Large \textit{Problem 3: RMI}}\\
+        \vspace{1.2cm}
+
+        \texttt{}\\
+        \vspace{0.2cm}
+
+        \includegraphics[height=10cm]{pageGarde.png}\\
+        \vspace{0.1cm}
+        {\Large \textbf{Universit\'e Catholique de Louvain}}
+        \vspace{0.3cm}
+
+        \vspace{2cm}
+        Group 24\\
+        \vspace{0.3cm}
+        Léonard Debroux\\
+        Thibaut Knop\\
+        \vspace{0.4cm}
+        2013-2014\\
+    \end{center}
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TITRE ET TABLE DES MATIERES%%%%%%%%%%%%%%%%%%
+%\maketitle
+%\tableofcontents
+%\addcontentsline{toc}{section}{ }
+\newpage
+
+%Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
+
+\section{Discussion}
+
+\subsection{Allocation of the various functions to the server and to the client}
+\subsection{Communication protocol between the client and the IRC server}
+\subsection{User guides of the client and server}
+Following the requirements, the server is launched by \verb@java myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
+
+The client can be used as follows : 
+\begin{itemize}
+\item To start a client please launch it with \verb@java myIRC IPServer ClientName@ by providing the ip address of the server machine, as well as a name for the client. If no name is provided, the application will automatically provides one (\verb@Guest#NumberOfGuest@).
+\item When a new client connect to the IRC chat, all the already connected clients receive information about the new entrant.
+\item To ask for the list of connected members, client can send the command \verb@who@, which returns the set of all members participating in the chat session.
+\item To quit the chat session, the client send the command \verb@quit@. All the others members receives the disconnection notice.
+\item Clients can send message to others clients by sending the command \verb@msg@. The application then asks for the client to which it has to deliver the message, and what you have to provide here is the name of the client you want to reach.
+\end{itemize}
+
+\subsection{The source code directory and instruction for building the executable files}
+In the \verb@etc@ folder, here are the files you can find : 
+\begin{description}
+\item[myIRC.java]
+\item[myIRCCallbackInterface.java]
+\item[myIRCCallbackImpl.java]
+\item[myIRCInterface.java]
+\item[myIRCObject.java]
+\item[myIRCServer.java]
+\end{description}
+
+To build the executable files, please execute the script \verb@make@ that you can find at the root of the directory (\verb@./make@). The \verb@make@ file compiles \verb@myIRCObject.java@, \verb@myIRCCallbackImpl@, \verb@myIRCServer.java@ and \verb@myIRC.java@. It also generates the codes for the client stub using \verb@rmic myIRC@.\\
+
+To try the program, please launch \verb@./make@, then start \verb@rmiregistry@ if it is not running yet, start the server with \verb@java myIRCServer &@ and finally start one or more clients \verb@java myIRC IPServer nameOfClient@.
+
+\subsection{Commented listings of the programs}
+Here are all the file for \verb@myIRC@ to work. For convenience, we included the generated files.
+
+\subsubsection{Server files}~
+	\lstinputlisting{../src/myIRCObject.java}
+	\lstinputlisting{../src/myIRCServer.java}`
+	\lstinputlisting{../src/MyIRCInterface.java}
+\subsubsection{Client files}~
+	\lstinputlisting{../src/myIRC.java}
+	\lstinputlisting{../src/myIRCCallbackInterface.java}
+	\lstinputlisting{../src/myIRCCallbackImpl.java}
+\subsubsection{Other}~
+	\lstinputlisting{../make}
+
+\end{document}
+
