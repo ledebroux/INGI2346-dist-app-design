@@ -38,11 +38,7 @@ public class myIRC {
 					disconnect();
 				}
 				else if(cmd.equals("msg")) {
-					System.out.print("To: ");
-					to = scanIn.nextLine();
-					System.out.print("Message: ");
-					msg = scanIn.nextLine();
-					sendMsg(to, msg);
+					sendMsg();
 				}
 				else {
 					System.out.println("Unknown command");
@@ -111,15 +107,19 @@ public class myIRC {
 		}
 	}
 	
-	public static void sendMsg(String dest, String msg){
+	public static void sendMsg(){
 		try {
-			if(dest.equals(name)){
+			System.out.print("To: ");
+			to = scanIn.nextLine();
+			System.out.print("Message: ");
+			msg = scanIn.nextLine();
+			if(to.equals(name)){
 				System.out.println("From me: " + msg);
 			}
 			else {
-				boolean result = c.sendMsg(dest, name, msg);
+				boolean result = c.sendMsg(to, name, msg);
 				if(!result){
-					System.out.println("Message to " + dest + " could not be delivered.");
+					System.out.println("Message to " + to + " could not be delivered.");
 				}
 			}
 		} catch (RemoteException re) {
@@ -133,12 +133,11 @@ public class myIRC {
 	public static void who(){
 		try {
 			System.out.println("Connected users:");
-			String[] users = c.who().toArray(new String[1]);
+			String[] users = c.who().toArray(new String[0]);
 			Arrays.sort(users);
 			for(String u: users){
 				System.out.println(u);
 			}
-			//System.out.println(c.who().toString());
 		} catch (RemoteException re) {
 			System.out.println();
 			System.out.println(
