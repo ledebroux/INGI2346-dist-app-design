@@ -24,7 +24,7 @@ implements myIRCInterface {
 		if(clients.containsKey(name)){
 			return false;
 		}
-		for(String c: clients.keySet()) {
+		for(String c: clients.keySet().toArray(new String[0])) {
 			try {
 				clients.get(c).arrived(name);
 			} catch (RemoteException re) {
@@ -33,7 +33,6 @@ implements myIRCInterface {
 						"RemoteException");
 				System.out.println(re);
 				disconnect(c);
-				return true;
 			}
 		}
 		clients.put(name, callbackObj);
@@ -46,10 +45,10 @@ implements myIRCInterface {
 			throws java.rmi.RemoteException {
 		clients.remove(name);
 		clientList.remove(name);
-		System.out.println("Client left: " + name);
-		for(String c: clients.keySet()) {
+		for(String c: clients.keySet().toArray(new String[0])) {
 			try {
 				clients.get(c).left(name);
+				System.out.println("Client left: " + name);
 			} catch (RemoteException re) {
 				System.out.println();
 				System.out.println(
