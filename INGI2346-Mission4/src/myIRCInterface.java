@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public interface myIRCInterface 
 extends java.rmi.Remote {
 
-	public boolean connect(String name, myIRCCallbackInterface callbackObj)
+	public String connect(String name, myIRCCallbackInterface callbackObj)
 			throws java.rmi.RemoteException;
 
 	public void disconnect(String name)

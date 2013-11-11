@@ -2,6 +2,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class myIRCObject
 extends java.rmi.server.UnicastRemoteObject 
@@ -11,18 +12,20 @@ implements myIRCInterface {
 
 	Map<String, myIRCCallbackInterface> clients = new HashMap<String, myIRCCallbackInterface>();
 	ArrayList<String> clientList = new ArrayList<String>();
+	Random rand = new Random();
 
 	public myIRCObject()
 			throws java.rmi.RemoteException {
 		super();
 	}
 
-	public boolean connect(String name, myIRCCallbackInterface callbackObj)
+	public String connect(String name, myIRCCallbackInterface callbackObj)
 			throws java.rmi.RemoteException {
-		//TODO : make sure that the client does't already exist
-		// return a value to inform of the status
 		if(clients.containsKey(name)){
-			return false;
+			return "failed";
+		}
+		if(name == null){
+			name = randomName();
 		}
 		for(String c: clients.keySet().toArray(new String[0])) {
 			try {
@@ -38,17 +41,17 @@ implements myIRCInterface {
 		clients.put(name, callbackObj);
 		clientList.add(name);
 		System.out.println("New client: " + name);
-		return true;
+		return "success";
 	}
 
 	public void disconnect(String name)
 			throws java.rmi.RemoteException {
 		clients.remove(name);
 		clientList.remove(name);
+		System.out.println("Client left: " + name);
 		for(String c: clients.keySet().toArray(new String[0])) {
 			try {
 				clients.get(c).left(name);
-				System.out.println("Client left: " + name);
 			} catch (RemoteException re) {
 				System.out.println();
 				System.out.println(
@@ -80,5 +83,14 @@ implements myIRCInterface {
 			}
 		}
 		return false;
+	}
+	
+	private String randomName(){
+		String res;
+		do {
+			int n = rand.nextInt(99999);
+			res = "guest" + n;
+		} while (clientList.contains(res));
+		return res;
 	}
 }

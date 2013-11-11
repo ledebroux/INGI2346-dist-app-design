@@ -10,7 +10,8 @@ import java.util.Scanner;
 
 public class myIRC {
 	
-	static String name;
+	static String name = null;
+	static String addr;
 	static myIRCInterface c;
 	static myIRCCallbackImpl callbackObj;
 	
@@ -21,11 +22,19 @@ public class myIRC {
 	
 	public static void main(String[] args) {
 		
-		name = args[1];
+		if(args.length == 0) {
+			System.out.println("Should be used as: myIRC server_addr username");
+		}
+		
+		addr = args[0];
+		if(args.length == 2){
+			name = args[1];
+		}
+		
 		scanIn = new Scanner(System.in);
 		
 		try {
-			c = (myIRCInterface)Naming.lookup("rmi://localhost:1099/myIRC");
+			c = (myIRCInterface)Naming.lookup("rmi://"+addr+":1099/myIRC");
 			connect();
 			who();
 			while(true){
@@ -79,12 +88,15 @@ public class myIRC {
 	public static void connect(){
 		try {
 			callbackObj = new myIRCCallbackImpl();
-			boolean connect = c.connect(name, callbackObj);
-			if(connect){
-				System.out.println("Connected as " + name);
-			} else {
+			String connect = c.connect(name, callbackObj);
+			if(connect.equals("failed")){
 				System.out.println("<" + name + "> is already in use.");
 				System.exit(0);
+			} else if (connect.equals("success")){
+				System.out.println("Connected as " + name);
+			} else {
+				name = connect;
+				System.out.println("Connected as " + name);
 			}
 		} catch (RemoteException re) {
 			System.out.println();
