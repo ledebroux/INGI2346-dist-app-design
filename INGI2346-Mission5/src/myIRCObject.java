@@ -16,7 +16,8 @@ implements myIRCInterface {
 
 	public myIRCObject()
 			throws java.rmi.RemoteException {
-		super();
+		super(0, new RMISSLClientSocketFactory(), new 
+				   RMISSLServerSocketFactory());
 	}
 
 	public String connect(String name, myIRCCallbackInterface callbackObj)

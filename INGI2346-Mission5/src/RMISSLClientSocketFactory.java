@@ -1,3 +1,11 @@
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.Socket;
+import java.rmi.server.RMIClientSocketFactory;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 public class RMISSLClientSocketFactory
 	implements RMIClientSocketFactory, Serializable {
 
