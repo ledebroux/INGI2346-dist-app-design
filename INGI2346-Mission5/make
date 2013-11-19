@@ -4,6 +4,8 @@ cd src
 rm *.class
 rm *_Stub.java
 
+javac RMISSLClientSocketFactory.java
+javac RMISSLServerSocketFactory.java
 javac myIRCObject.java
 javac myIRCCallbackImpl.java
 rmic -keep myIRCObject
