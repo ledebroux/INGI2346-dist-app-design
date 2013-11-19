@@ -1,5 +1,3 @@
-
-
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -37,6 +35,10 @@ public class myIRC {
 			c = (myIRCInterface)Naming.lookup("rmi://"+addr+":1099/myIRC");
 			connect();
 			who();
+			
+			/*
+			 * loop and read the commands that the user enters 
+			 */
 			while(true){
 				System.out.print("#");
 				cmd = scanIn.nextLine();
@@ -52,11 +54,7 @@ public class myIRC {
 				else {
 					System.out.println("Unknown command");
 				}
-				//System.out.println(cmd);
 			}
-//			who();
-//			sendMsg(name, "Hello me!");
-//			disconnect();
 		}
 		catch (MalformedURLException murle) {
 			System.out.println();
@@ -85,6 +83,11 @@ public class myIRC {
 		}
 	}
 	
+	/**
+	 * connect
+	 * creates an object for the client and sends it to the server
+	 * reads the value returned by the server and acts accordingly
+	 */
 	public static void connect(){
 		try {
 			callbackObj = new myIRCCallbackImpl();
@@ -106,6 +109,10 @@ public class myIRC {
 		}
 	}
 	
+	/**
+	 * disconnect
+	 * informs the server that the client wants to disconnect
+	 */
 	public static void disconnect(){
 		try {
 			c.disconnect(name);
@@ -119,6 +126,11 @@ public class myIRC {
 		}
 	}
 	
+	/**
+	 * sendMsg
+	 * upon a msg command, the user is asked for a recipient and a message to send
+	 * the server method is then called
+	 */
 	public static void sendMsg(){
 		try {
 			System.out.print("To: ");
@@ -142,6 +154,10 @@ public class myIRC {
 		}
 	}
 	
+	/**
+	 * who
+	 * asks the server for the list of connected users
+	 */
 	public static void who(){
 		try {
 			System.out.println("Connected users:");
