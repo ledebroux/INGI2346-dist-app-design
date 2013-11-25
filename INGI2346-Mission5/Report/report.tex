@@ -107,7 +107,7 @@ In the \verb@src@ folder, here are the files you can find :
 \item[myIRCInterface.java] Contains the interface for the remote classe. The methods that will be implemented are those called by the client to perform the corresponding actions.
 \item[myIRCObject.java] Contains the implementation of the interface specified above. Its methods are called by the clients.
 \item[RMISSLClientSocketFactory.java] Contains the implementation of the \verb@RMIClientSocketFactory@ interface. It allows creation of sockets used under RMI using \verb@SSLSocketFactory@, allowing the client to connect to the server with a ciphered connection.
-\item[RMISSLServerSocketFactory.java] Idem as above, but for the server side.
+\item[RMISSLServerSocketFactory.java] Same as above, but for the server side.
 \end{description}
 
 To build the executable files, please execute the script \verb@make@ that you can find at the root of the directory (\verb@./make@). The \verb@make@ script compiles \verb@myIRCObject.java@, \verb@myIRCCallbackImpl@, \verb@myIRCServer.java@, \verb@myIRC.java@, \verb@javac RMISSLClientSocketFactory.java@, and \verb@javac RMISSLServerSocketFactory.java@. It also generates the codes for the client stub using \verb@rmic myIRC@.\\
