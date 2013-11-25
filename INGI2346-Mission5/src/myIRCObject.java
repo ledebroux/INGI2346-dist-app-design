@@ -13,13 +13,19 @@ implements myIRCInterface {
 	Map<String, myIRCCallbackInterface> clients = new HashMap<String, myIRCCallbackInterface>();
 	ArrayList<String> clientList = new ArrayList<String>();
 	Random rand = new Random();
-
+	
 	public myIRCObject()
 			throws java.rmi.RemoteException {
-		//super();
 		super(0, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
 	}
-
+	
+	/**
+	 * connect
+	 * adds the client and its object to the Map and ArrayList containing the clients
+	 * if the client did not provide a name, one is given for it
+	 * every other client is noticed: if a client in the list can't be reached, 
+	 * it is considered disconnected and is removed from the data structures
+	 */
 	public String connect(String name, myIRCCallbackInterface callbackObj)
 			throws java.rmi.RemoteException {
 		String res;
@@ -49,6 +55,12 @@ implements myIRCInterface {
 		return res;
 	}
 
+	/**
+	 * disconnect
+	 * removes the client from the data structures
+	 * notices all the other clients: if a client in the list can't be reached, 
+	 * it is considered disconnected and is removed from the data structures
+	 */
 	public void disconnect(String name)
 			throws java.rmi.RemoteException {
 		clients.remove(name);
@@ -67,11 +79,20 @@ implements myIRCInterface {
 		}
 	}
 	
+	/**
+	 * who
+	 * returns the list of all connected clients
+	 */
 	public ArrayList<String> who()
 			throws java.rmi.RemoteException {
 		return clientList;
 	}
 
+	/**
+	 * sendMsg
+	 * calls the method on the destination client object to forward 
+	 * 		the message from the sender
+	 */
 	public boolean sendMsg(String dest, String sender, String msg) 
 			throws RemoteException {
 		if(clients.containsKey(dest)){
@@ -90,6 +111,11 @@ implements myIRCInterface {
 		return false;
 	}
 	
+	/**
+	 * randomName
+	 * choose a random name that is not already taken
+	 * 		in the case of the client not giving a name
+	 */
 	private String randomName(){
 		String res;
 		do {

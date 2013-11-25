@@ -42,9 +42,6 @@ implements RMIClientSocketFactory, Serializable {
 			e.printStackTrace();
 		}
 
-		//remplacé:
-//		sf = (SSLSocketFactory)SSLSocketFactory.getDefault();
-
 		s = (SSLSocket)sf.createSocket(host, port);
 		return s;
 			}
