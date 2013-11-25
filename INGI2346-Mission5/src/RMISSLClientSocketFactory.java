@@ -23,7 +23,6 @@ implements RMIClientSocketFactory, Serializable {
 		SSLSocket s = null;
 
 		try {
-			// set up key manager to do server authentication
 			SSLContext ctx;
 			KeyManagerFactory kmf;
 			KeyStore ks;
