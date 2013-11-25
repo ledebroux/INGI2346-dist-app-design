@@ -43,7 +43,17 @@
 
 \section{Communications security}
 \subsection{Server \& Client authentication}
+The SSL sockets used by RMI are implemented by the standard classes \verb@SSLSocket@ and \verb@SSLSocketServer@ and are created by standard factories \verb@SSLSocketFactory@ and \verb@SSLSocketServerFactory@. Ands all sockets that are used under RMI are created by classes that implements the standard interfaces \verb@RMIClientSocketFactory@ and \verb@RMIServerSocketFactory@. The file \verb@RMISSLClientSocketFactory@ contains the implementation of the \verb@RMIClientSocketFactory@ interface. It creates a SSL socket instead of a classic one, allowing the client to connect to the server with a ciphered connection. \\
 
+In order to authenticate the server, the client needs a local copy of the certificate that authenticate the server. To locate this copy, there are 2 possibilities : initialization in command line mode, with \verb@-Djavax.net.ssl.trustStore=truststorefile@ or in the program code with \verb@System.setProperty("@\\\verb@javax.net.ssl.trustStore", "truststorefile");@. We chose the second solution, in order to reduce the complexity of starting the client/server. After having authenticated the certificate of the server, the client creates a private key and cipher it with the public key of the server. Only the server will be able to decode the client's key with its own private key, which properly authenticate the server.\\
+
+On the server side, we create a \verb@RMISSLServerSocketFactory@ class that implements the \verb@RMIServer@\\\verb@SocketFactory@ interface.\\
+
+To secure the RMI application with SSL, we replace, in the code of the client-side object, the call to the default constructor to the parent class (\verb@java.rmi.server.UnicastRemoteObject@) by a new constructor with 3 parameters : \verb@super(0, new RMISSLClientSocketFactory(), new RMISSLServerSock@\\\verb@etFactory());@.\\
+
+To authenticate the client, we need to modify the \verb@RMISSLClientFactory@ by creating a context with a keys manager, building a \verb@SocketFactory@ based on that context instead of a default one.\\
+
+We also secure the callback object in the server-side by replacing the constructor, just in the way we did for the client-side object.
 \subsection{Registration}
 
 \section{Allocation of the various functions to the server and to the client}
