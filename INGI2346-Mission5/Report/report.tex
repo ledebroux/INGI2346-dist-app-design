@@ -12,7 +12,7 @@
         {\Large {Teacher : Marc Lobelle}}\\
         \vspace{0.6cm}
         
-        {\Large \textit{Problem 3: RMI}}\\
+        {\Large \textit{Problem 4: Advanced RMI}}\\
         \vspace{1.2cm}
 
         \texttt{}\\
@@ -41,9 +41,12 @@
 
 %Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
 
-\section{Discussion}
+\section{Communications security}
+\subsection{Server \& Client authentication}
 
-\subsection{Allocation of the various functions to the server and to the client}
+\subsection{Registration}
+
+\section{Allocation of the various functions to the server and to the client}
 \paragraph{Server side}
 An object \verb@myIRCObject@ is created and have the following methods that the client can call on : 
 \begin{itemize}
@@ -63,12 +66,12 @@ An object \verb@myIRCCallbackImpl@ is created that assumes the following methods
 
 The implementation details are available in the comments in the code.
 
-\subsection{Communication protocol between the client and the IRC server}
+\section{Communication protocol between the client and the IRC server}
 
 The client is able to communicate with the server thanks to its object that it has bond.\\
 Upon the call to \verb@connect@, the client sends its own \verb@myIRCCallbackImpl@ object that the server can use to reach the client. Technically speaking, the \verb@myIRCCallbackImpl@ objects are stored by the server in a \verb@hashmap@ whose keys are the name of the client.
 
-\subsection{User guides of the client and server}
+\section{User guides of the client and server}
 Following the requirements, the server is launched by \verb@java myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
 
 The client can be used as follows : 
@@ -80,7 +83,7 @@ The client can be used as follows :
 \item Clients can send message to others clients by sending the command \verb@msg@. The application then asks for the client to which it has to deliver the message, and what you have to provide here is the name of the client you want to reach.
 \end{itemize}
 
-\subsection{The source code directory and instruction for building the executable files}
+\section{The source code directory and instruction for building the executable files}
 In the \verb@src@ folder, here are the files you can find : 
 \begin{description}
 \item[myIRC.java] Contains the code that connects the client and then listens to the commands typed by the clients.
@@ -95,18 +98,18 @@ To build the executable files, please execute the script \verb@make@ that you ca
 
 To try the program, please launch \verb@./make@, then start \verb@rmiregistry@ if it is not running yet, start the server with \verb@java myIRCServer &@ and finally start one or more clients \verb@java myIRC IPServer nameOfClient@.
 
-\subsection{Commented listings of the programs}
+\section{Commented listings of the programs}
 Here are all the file for \verb@myIRC@ to work.
 
-\subsubsection{Server files}~
+\subsection{Server files}~
 	\lstinputlisting{../src/myIRCObject.java}
 	\lstinputlisting{../src/myIRCServer.java}`
 	\lstinputlisting{../src/MyIRCInterface.java}
-\subsubsection{Client files}~
+\subsection{Client files}~
 	\lstinputlisting{../src/myIRC.java}
 	\lstinputlisting{../src/myIRCCallbackInterface.java}
 	\lstinputlisting{../src/myIRCCallbackImpl.java}
-\subsubsection{Other}~
+\subsection{Other}~
 	\lstinputlisting{../make}
 
 \end{document}
