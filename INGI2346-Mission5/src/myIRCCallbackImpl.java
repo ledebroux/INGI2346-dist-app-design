@@ -7,7 +7,8 @@ implements myIRCCallbackInterface {
 	private static final long serialVersionUID = 1998177431327689435L;
 
 	public myIRCCallbackImpl() throws RemoteException {
-		super( );
+		//super();
+		super(0, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
 	}
 
 	public void receiveMsg(String msg, String sender) throws RemoteException {

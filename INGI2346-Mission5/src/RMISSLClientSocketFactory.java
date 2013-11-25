@@ -17,6 +17,8 @@ implements RMIClientSocketFactory, Serializable {
 	public Socket createSocket(String host, int port)
 			throws IOException
 			{
+		
+		System.setProperty("javax.net.ssl.trustStore", "servertesttrust");
 		SSLSocketFactory sf = null;
 		SSLSocket s = null;
 
@@ -35,13 +37,13 @@ implements RMIClientSocketFactory, Serializable {
 			kmf.init(ks, passphrase);
 			ctx.init(kmf.getKeyManagers(), null, null);
 
-			sf = ctx.getServerSocketFactory();
+			sf = ctx.getSocketFactory();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		//remplacé:
-		// sf = (SSLSocketFactory)SSLSocketFactory.getDefault();
+//		sf = (SSLSocketFactory)SSLSocketFactory.getDefault();
 
 		s = (SSLSocket)sf.createSocket(host, port);
 		return s;

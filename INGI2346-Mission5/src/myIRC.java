@@ -76,8 +76,7 @@ public class myIRC {
 					"NotBoundException");
 			System.out.println(nbe);
 		}
-		catch (
-				java.lang.ArithmeticException ae) {
+		catch (java.lang.ArithmeticException ae) {
 			System.out.println();
 			System.out.println(
 					"java.lang.ArithmeticException");
