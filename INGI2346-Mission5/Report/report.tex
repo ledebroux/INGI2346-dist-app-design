@@ -55,6 +55,10 @@ To authenticate the client, we need to modify the \verb@RMISSLClientFactory@ by 
 
 We also secure the callback object in the server-side by replacing the constructor, just in the way we did for the client-side object.
 \subsection{Registration}
+In order to be efficient, this application should offer the client the possibility to register to the server. This would include the creation of a certificate client-side and the sending of the client's public key to the server.\\
+To acheive that, we could choose to create a second object server side \texttt{myIRCRegister} that would be bond to another address than \texttt{myIRCObject}. When a client wants to connect, it should decide wether it should get the first or the second server-object. This choice may be done by checking if the client owns a certificate.\\
+The use of \texttt{myIRCRegister} should be limited to teach the client's public key to the server. Then, the client should get the second object from the server thanks to its certificate in order to be able to use the application.\\
+Server-side, the client's certificates should be stored and the correspondance between a client and its certificate should be store in a file. Storing it in a data structure upon the execution would be inefficient as it would be reset at each execution. Those pairs of <client, certificate> should be loaded at the server start in order to be able to accept a connection from any known client.
 
 \section{Allocation of the various functions to the server and to the client}
 \paragraph{Server side}
@@ -82,11 +86,12 @@ The client is able to communicate with the server thanks to its object that it h
 Upon the call to \verb@connect@, the client sends its own \verb@myIRCCallbackImpl@ object that the server can use to reach the client. Technically speaking, the \verb@myIRCCallbackImpl@ objects are stored by the server in a \verb@hashmap@ whose keys are the name of the client.
 
 \section{User guides of the client and server}
-Following the requirements, the server is launched by \verb@java myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
+Following the requirements, the server is launched by \verb@java -Djavax.net.ssl.trustStore=clienttesttrust myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
+If a registration feature was implemented, it wouldn't be needed to give the client certificate when starting the server as it would be handled by it. The server would know all its client certificates and recognize a client upon its connection.
 
 The client can be used as follows : 
 \begin{itemize}
-\item To start a client please launch it with \verb@java myIRC IPServer ClientName@ by providing the ip address of the server machine, as well as a name for the client. If no name is provided, the application will automatically provides one (\verb@guest#RandomNumber@).
+\item To start a client please launch it with \verb@java myIRC IPServer ClientName@ by providing the ip address of the server machine, as well as a name for the client. If no name is provided, the application will automatically provides one (\verb@guest#RandomNumber@). There is no need to give the server certificate as argument as it is written in the code.
 \item When a new client connect to the IRC chat, all the already connected clients receive information about the new entrant.
 \item To ask for the list of connected members, client can send the command \verb@who@, which returns the set of all members participating in the chat session.
 \item To quit the chat session, the client send the command \verb@quit@. All the others members receives the disconnection notice.
@@ -101,7 +106,8 @@ In the \verb@src@ folder, here are the files you can find :
 \item[myIRCCallbackImpl.java] Contains the implementation of the interface specified above.
 \item[myIRCInterface.java] Contains the interface for the remote classe. The methods that will be implemented are those called by the client to perform the corresponding actions.
 \item[myIRCObject.java] Contains the implementation of the interface specified above. Its methods are called by the clients.
-\item[myIRCServer.java] Contains the code for the server that creates the object \verb@myIRCObject@ and register it to the \verb@rmiregistry@, by identify the object with a URL. 
+\item[RMISSLClientSocketFactory.java] 
+\item[RMISSLServerSocketFactory.java] 
 \end{description}
 
 To build the executable files, please execute the script \verb@make@ that you can find at the root of the directory (\verb@./make@). The \verb@make@ file compiles \verb@myIRCObject.java@, \verb@myIRCCallbackImpl@, \verb@myIRCServer.java@ and \verb@myIRC.java@. It also generates the codes for the client stub using \verb@rmic myIRC@.\\
