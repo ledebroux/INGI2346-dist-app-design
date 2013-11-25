@@ -86,7 +86,7 @@ The client is able to communicate with the server thanks to its object that it h
 Upon the call to \verb@connect@, the client sends its own \verb@myIRCCallbackImpl@ object that the server can use to reach the client. Technically speaking, the \verb@myIRCCallbackImpl@ objects are stored by the server in a \verb@hashmap@ whose keys are the name of the client.
 
 \section{User guides of the client and server}
-Following the requirements, the server is launched by \verb@java -Djavax.net.ssl.trustStore=clienttesttrust myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
+Following the requirements, the server is launched by \verb@java -Djavax.net.ssl.trustStore=clienttest@\\\verb@trust myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
 If a registration feature was implemented, it wouldn't be needed to give the client certificate when starting the server as it would be handled by it. The server would know all its client certificates and recognize a client upon its connection.
 
 The client can be used as follows : 
