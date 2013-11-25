@@ -43,7 +43,7 @@
 
 \section{Communications security}
 \subsection{Server \& Client authentication}
-The SSL sockets used by RMI are implemented by the standard classes \verb@SSLSocket@ and \verb@SSLSocketServer@ and are created by standard factories \verb@SSLSocketFactory@ and \verb@SSLSocketServerFactory@. Ands all sockets that are used under RMI are created by classes that implements the standard interfaces \verb@RMIClientSocketFactory@ and \verb@RMIServerSocketFactory@. The file \verb@RMISSLClientSocketFactory@ contains the implementation of the \verb@RMIClientSocketFactory@ interface. It creates a SSL socket instead of a classic one, allowing the client to connect to the server with a ciphered connection. \\
+The SSL sockets used by RMI are implemented by the standard classes \verb@SSLSocket@ and \verb@SSLSocketServer@ and are created by standard factories \verb@SSLSocketFactory@ and \verb@SSLSocketServerFactory@. And all sockets that are used under RMI are created by classes that implements the standard interfaces \verb@RMIClientSocketFactory@ and \verb@RMIServerSocketFactory@. The file \verb@RMISSLClientSocketFactory@ contains the implementation of the \verb@RMIClientSocketFactory@ interface. It creates a SSL socket instead of a classic one, allowing the client to connect to the server with a ciphered connection. \\
 
 In order to authenticate the server, the client needs a local copy of the certificate that authenticate the server. To locate this copy, there are 2 possibilities : initialization in command line mode, with \verb@-Djavax.net.ssl.trustStore=truststorefile@ or in the program code with \verb@System.setProperty("@\\\verb@javax.net.ssl.trustStore", "truststorefile");@. We chose the second solution, in order to reduce the complexity of starting the client/server. After having authenticated the certificate of the server, the client creates a private key and cipher it with the public key of the server. Only the server will be able to decode the client's key with its own private key, which properly authenticate the server.\\
 
@@ -106,8 +106,8 @@ In the \verb@src@ folder, here are the files you can find :
 \item[myIRCCallbackImpl.java] Contains the implementation of the interface specified above.
 \item[myIRCInterface.java] Contains the interface for the remote classe. The methods that will be implemented are those called by the client to perform the corresponding actions.
 \item[myIRCObject.java] Contains the implementation of the interface specified above. Its methods are called by the clients.
-\item[RMISSLClientSocketFactory.java] 
-\item[RMISSLServerSocketFactory.java] 
+\item[RMISSLClientSocketFactory.java] Contains the implementation of the \verb@RMIClientSocketFactory@ interface. It allows creation of sockets used under RMI using \verb@SSLSocketFactory@, allowing the client to connect to the server with a ciphered connection.
+\item[RMISSLServerSocketFactory.java] Idem as above, but for the server side.
 \end{description}
 
 To build the executable files, please execute the script \verb@make@ that you can find at the root of the directory (\verb@./make@). The \verb@make@ file compiles \verb@myIRCObject.java@, \verb@myIRCCallbackImpl@, \verb@myIRCServer.java@ and \verb@myIRC.java@. It also generates the codes for the client stub using \verb@rmic myIRC@.\\
