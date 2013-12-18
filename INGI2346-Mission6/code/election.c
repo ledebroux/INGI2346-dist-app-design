@@ -105,6 +105,13 @@ int main()
   int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
 
   /*
+  unsigned int n = 6;
+  unsigned int nbEdge = 8;
+  int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, 
+                {4,5}, {5,1}, {3,6}, {6,4}};
+  */
+
+  /*
    * VAR INIT
    */
 
@@ -165,43 +172,67 @@ int main()
    */
   for(i = 1; i <= n; i++){
     cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
+    printf("Node %i spawned\n", i);
     if(cc == 1){
+      int initData[4] = {i, ingoing[i-1], outgoing[i-1], diameter};
+      //print_array(initData, 4);
       pvm_initsend(PvmDataDefault);
-      pvm_pkint(&outgoing[i-1], 1, 1);
+      pvm_pkint(initData, 4, 1);
       pvm_send(tid[i-1],1);
-      //receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
+      receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
     }
 
   }
 
   /* At this point of the execution, all tids are known */
 
-  print_matrix(n, n, adjMatrix);
-  print_matrix(n, n, TadjMatrix);
+  // print_matrix(n, n, adjMatrix);
+  // print_matrix(n, n, TadjMatrix);
 
   print_array(tid, n);
-  print_array(outgoing, n);
-  print_array(ingoing, n);
+  // print_array(outgoing, n);
+  // print_array(ingoing, n);
 
   for(i=1; i<=n; i++){
     int children[outgoing[i-1]];
     int parents[ingoing[i-1]];
-    int offset = 0;
+    int offset_children = 0;
+    int offset_parents = 0;
     for(j=0; j<n; j++){
       if(adjMatrix[i-1][j]==1){
         //printf("%i has child %i\n", i, tid[j]);
-        children[offset] = tid[j];
-        offset++;
+        children[offset_children] = tid[j];
+        offset_children++;
+      }
+      if(TadjMatrix[i-1][j]==1){
+        //printf("%i is reachable by %i\n", i, tid[j]);
+        parents[offset_parents] = tid[j];
+        offset_parents++;
       }
       // TODO set the value for parent wrt. TadjMatrix
     }
     pvm_initsend(PvmDataDefault);
+    //print_array(children, outgoing[i-1]);
+    //print_array(parents, ingoing[i-1]);
     pvm_pkint(children, outgoing[i-1], 1);
+    pvm_pkint(parents, ingoing[i-1], 1);
     pvm_send(tid[i-1],1);
 
     receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
+    receive();
+    //receive();
   }
-  printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
+
+  for(i=1; i<=n; i++){
+    pvm_initsend(PvmDataDefault);
+    pvm_pkstr("Start");
+    pvm_send(tid[i-1],1);
+  }
+  // printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
+
+  for(i=1; i<=n; i++){
+    receive();
+  }
 
   printf("End of main()\n");
   return 0;
