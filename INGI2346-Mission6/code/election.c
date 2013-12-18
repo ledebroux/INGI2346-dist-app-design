@@ -25,7 +25,7 @@ int index(int x, int y, int col){
  * Using the Floyd-Warshall algorithm to get
  *    the shortest path between all nodes
  */
-int compute_diameter(int vertices, int edges[row][2], int row){
+int compute_diameter(int vertices, int row, int edges[row][2]){
   /* Begining of Floyd-Warshall algorithm */
   int dist[vertices][vertices];
   int i, j;
@@ -39,8 +39,8 @@ int compute_diameter(int vertices, int edges[row][2], int row){
   }
   //printf("size %lu\n", sizeof(edges)/(sizeof(edges[0])*2));
   for(j=0; j<row; j++){
-    int u_index = index(j, 0, 2);
-    int v_index = index(j, 1, 2);
+    // int u_index = index(j, 0, 2);
+    // int v_index = index(j, 1, 2);
     int u = edges[j][0];
     int v = edges[j][1];
     dist[u-1][v-1] = 1;
@@ -68,7 +68,7 @@ int compute_diameter(int vertices, int edges[row][2], int row){
   /* End of Floyd-Warshall algorithm */
 
   
-for (i=0;i<vertices;i++){
+  for (i=0;i<vertices;i++){
     for(j=0;j<vertices;j++){
       printf("%d ",dist[i][j]);
     }
@@ -127,7 +127,7 @@ int main()
 
   unsigned int i, j;
 
-  int diameter = compute_diameter(n, e, nbEdge);
+  int diameter = compute_diameter(n, nbEdge, e);
 
   int adjMatrix[n][n];
   for (i=0;i<n;i++){
