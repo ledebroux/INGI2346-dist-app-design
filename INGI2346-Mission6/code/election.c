@@ -25,7 +25,7 @@ int index(int x, int y, int col){
  * Using the Floyd-Warshall algorithm to get
  *    the shortest path between all nodes
  */
-int compute_diameter(int vertices, int* edges, int size){
+int compute_diameter(int vertices, int edges[row][2], int row){
   /* Begining of Floyd-Warshall algorithm */
   int dist[vertices][vertices];
   int i, j;
@@ -37,12 +37,12 @@ int compute_diameter(int vertices, int* edges, int size){
   for(i=0; i<vertices; i++){
     dist[i][i]=0;
   }
-  printf("size %lu\n", sizeof(edges)/(sizeof(edges[0])*2));
-  for(j=0; j<size; j++){
+  //printf("size %lu\n", sizeof(edges)/(sizeof(edges[0])*2));
+  for(j=0; j<row; j++){
     int u_index = index(j, 0, 2);
     int v_index = index(j, 1, 2);
-    int u = edges[u_index];
-    int v = edges[v_index];
+    int u = edges[j][0];
+    int v = edges[j][1];
     dist[u-1][v-1] = 1;
     printf("u: %i and v: %i\n", u, v);
   }
@@ -119,7 +119,7 @@ int main()
   unsigned int n = 5;
   unsigned int nbEdge = 6;
   // unsigned int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
-  int e[] = {1,2, 1,4, 2,3, 3,1, 4,5, 5,1};
+  int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
 
   /*
    * VAR INIT
@@ -154,16 +154,16 @@ int main()
    *    the number of ingoing edges to i+1
    */
   for(i = 1; i <= n; i++){
-    for(j=0; j<sizeof(e)/(sizeof(e[0])*2); j++){
+    for(j=0; j<nbEdge; j++){
       // printf("j: %i\n", j);
-      int e_index = index(j, 0, 2);
+      // int e_index = index(j, 0, 2);
       // printf("for index: %i\n", e_index);
-      if(e[e_index] == i){
-        e_index = index(j, 1, 2);
+      if(e[j][0] == i){
+        // e_index = index(j, 1, 2);
         // printf("if index: %i\n", e_index);
-        adjMatrix[i-1][e[e_index]-1] = 1;
+        adjMatrix[i-1][e[j][1]-1] = 1;
         outgoing[i-1]++;
-        ingoing[e[e_index]-1]++;
+        ingoing[e[j][1]-1]++;
       }
     }
   }
