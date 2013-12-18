@@ -108,8 +108,8 @@ int main()
   int diameter = compute_diameter(n, e);
 
   int adjMatrix[n-1][n-1];
-  for (i=0;i<n;i++){
-    for(j=0;j<n;j++){
+  for (i=0;i<n-1;i++){
+    for(j=0;j<n-1;j++){
       adjMatrix[i][j]=0;
     }
   }
