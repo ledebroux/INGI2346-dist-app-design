@@ -12,7 +12,7 @@
         {\Large {Teacher : Marc Lobelle}}\\
         \vspace{0.6cm}
         
-        {\Large \textit{Problem 4: Advanced RMI}}\\
+        {\Large \textit{Problem 5: Parallel Virtual Machine}}\\
         \vspace{1.2cm}
 
         \texttt{}\\
@@ -41,95 +41,29 @@
 
 %Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
 
-\section{Communications security}
-\subsection{Server \& Client authentication}
-The SSL sockets used by RMI are implemented by the standard classes \verb@SSLSocket@ and \verb@SSLSocketServer@ and are created by standard factories \verb@SSLSocketFactory@ and \verb@SSLSocketServerFactory@. And all sockets that are used under RMI are created by classes that implements the standard interfaces \verb@RMIClientSocketFactory@ and \verb@RMIServerSocketFactory@. The file \verb@RMISSLClientSocketFactory@ contains the implementation of the \verb@RMIClientSocketFactory@ interface. It creates a SSL socket instead of a classic one, allowing the client to connect to the server with a ciphered connection. \\
+\section{Reasoning for the implementation of the algorithm}
 
-In order to authenticate the server, the client needs a local copy of the certificate that authenticate the server. To locate this copy, there are 2 possibilities : initialization in command line mode, with \verb@-Djavax.net.ssl.trustStore=truststorefile@ or in the program code with \verb@System.setProperty("@\\\verb@javax.net.ssl.trustStore", "truststorefile");@. We chose the second solution, in order to reduce the complexity of starting the client/server. After having authenticated the certificate of the server, the client creates a private key and cipher it with the public key of the server. Only the server will be able to decode the client's key with its own private key, which properly authenticate the server.\\
-
-On the server side, we create a \verb@RMISSLServerSocketFactory@ class that implements the \verb@RMIServer@\\\verb@SocketFactory@ interface.\\
-
-To secure the RMI application with SSL, we replace, in the code of the client-side object, the call to the default constructor to the parent class (\verb@java.rmi.server.UnicastRemoteObject@) by a new constructor with 3 parameters : \verb@super(0, new RMISSLClientSocketFactory(), new RMISSLServerSock@\\\verb@etFactory());@.\\
-
-To authenticate the client, we need to modify the \verb@RMISSLClientFactory@ by creating a context with a keys manager, building a \verb@SocketFactory@ based on that context instead of a default one.\\
-
-We also secure the callback object in the server-side by replacing the constructor, just in the way we did for the client-side object.
-\subsection{Registration}
-In order to be efficient, this application should offer the client the possibility to register to the server. This would include the creation of a certificate client-side and the sending of the client's public key to the server.\\
-To acheive that, we could choose to create a second object server side \texttt{myIRCRegister} that would be bond to another address than \texttt{myIRCObject}. When a client wants to connect, it should decide wether it should get the first or the second server-object. This choice may be done by checking if the client owns a certificate.\\
-The use of \texttt{myIRCRegister} should be limited to teach the client's public key to the server. Then, the client should get the second object from the server thanks to its certificate in order to be able to use the application.\\
-Server-side, the client's certificates should be stored and the correspondance between a client and its certificate should be store in a file. Storing it in a data structure upon the execution would be inefficient as it would be reset at each execution. Those pairs of <client, certificate> should be loaded at the server start in order to be able to accept a connection from any known client.
-
-\section{Allocation of the various functions to the server and to the client}
-\paragraph{Server side}
-An object \verb@myIRCObject@ is created and have the following methods that the client can call on : 
-\begin{itemize}
-\item \verb@connect(name,callbackObj)@ : Add the new client to the server and notices the other clients of the new arrival.
-\item \verb@disconnect(name)@ : Remove the client from the server and notices the others clients of the departure.
-\item \verb@sendMsg(dest,sender,msg)@ : Send a message \verb@msg@ from \verb@sender@ to \verb@dest@.
-\item \verb@who@ : Returns the list of the connected clients.
-\end{itemize}
-
-\paragraph{Client side}
-An object \verb@myIRCCallbackImpl@ is created that assumes the following methods :
-\begin{itemize}
-\item \verb@receiveMsg(msg,sender)@ : displays the message \verb@msg@ that was sent by \verb@sender@.
-\item \verb@left(user)@ : prints that \verb@user@ has left.
-\item \verb@arrived(user)@ : prints that \verb@user@ has arrived.
-\end{itemize}
-
-The implementation details are available in the comments in the code.
-
-\section{Communication protocol between the client and the IRC server}
-
-The client is able to communicate with the server thanks to its object that it has bond.\\
-Upon the call to \verb@connect@, the client sends its own \verb@myIRCCallbackImpl@ object that the server can use to reach the client. Technically speaking, the \verb@myIRCCallbackImpl@ objects are stored by the server in a \verb@hashmap@ whose keys are the name of the client.
-
-\section{User guides of the client and server}
-Following the requirements, the server is launched by \verb@java -Djavax.net.ssl.trustStore=clienttest@\\\verb@trust myIRCServer.java@. Since there is no manager for the server, the only way to stop the server is by using \verb@ctrl-c@ command, which is not very graceful.\\
-If a registration feature was implemented, it wouldn't be needed to give the client certificate when starting the server as it would be handled by it. The server would know all its client certificates and recognize a client upon its connection.
-
-The client can be used as follows : 
-\begin{itemize}
-\item To start a client please launch it with \verb@java myIRC IPServer ClientName@ by providing the ip address of the server machine, as well as a name for the client. If no name is provided, the application will automatically provides one (\verb@guest#RandomNumber@). There is no need to give the server certificate as argument as it is written in the code.
-\item When a new client connect to the IRC chat, all the already connected clients receive information about the new entrant.
-\item To ask for the list of connected members, client can send the command \verb@who@, which returns the set of all members participating in the chat session.
-\item To quit the chat session, the client send the command \verb@quit@. All the others members receives the disconnection notice.
-\item Clients can send message to others clients by sending the command \verb@msg@. The application then asks for the client to which it has to deliver the message, and what you have to provide here is the name of the client you want to reach.
-\end{itemize}
+\section{Discussion of the problems involved in the use of the groups of processes}
 
 \section{The source code directory and instruction for building the executable files}
-In the \verb@src@ folder, here are the files you can find : 
+In the \verb@code@ folder, here are the files you can find : 
 \begin{description}
-\item[myIRC.java] Contains the code that connects the client and then listens to the commands typed by the clients.
-\item[myIRCCallbackInterface.java] Contains the interface for the callback object. The in-defined methods are those to be called by the server whenever it wants to communicate with a specific client.
-\item[myIRCCallbackImpl.java] Contains the implementation of the interface specified above.
-\item[myIRCInterface.java] Contains the interface for the remote classe. The methods that will be implemented are those called by the client to perform the corresponding actions.
-\item[myIRCObject.java] Contains the implementation of the interface specified above. Its methods are called by the clients.
-\item[RMISSLClientSocketFactory.java] Contains the implementation of the \verb@RMIClientSocketFactory@ interface. It allows creation of sockets used under RMI using \verb@SSLSocketFactory@, allowing the client to connect to the server with a ciphered connection.
-\item[RMISSLServerSocketFactory.java] Same as above, but for the server side.
+\item[config] Contains the initial configuration for the \verb@pvm@ process. Here it contains only the path to the executables, for any machines names. It avoids to have to place the executables in the \verb@PVM_ARCH@ directory of the \verb@pvm@ directory.
+\item[election.c] Contains the code for the main tasks that will create the different \verb@pvm@ tasks associated with each node and compute the \verb@diameter@ of the graph. More practically, it parses the input graph, then creates the pvm tasks associated to each node, compute the diameter ans makes the nodes aware of the others nodes they can reach.
+\item[node.c] Contains the code for the different nodes of the graph : first the node are created, then they start the election algorithm.
 \end{description}
 
-To build the executable files, please execute the script \verb@make@ that you can find at the root of the directory (\verb@./make@). The \verb@make@ script compiles \verb@myIRCObject.java@, \verb@myIRCCallbackImpl@, \verb@myIRCServer.java@, \verb@myIRC.java@, \verb@javac RMISSLClientSocketFactory.java@, and \verb@javac RMISSLServerSocketFactory.java@. It also generates the codes for the client stub using \verb@rmic myIRC@.\\
+To build the executable files, please execute the \verb@makefile@ that you can find at the root of the directory (\verb@./make@). The \verb@makefile@ compiles \verb@election.c@ and \verb@node.c@.\\
 
-To try the program, please launch \verb@./make@, then start \verb@rmiregistry@ if it is not running yet, start the server with \verb@java -Djavax.net.ssl.trustStore=clienttesttrust myIRCServer &@ and finally start one or more clients \verb@java myIRC IPServer nameOfClient@. As no registration feature currently exists, all clients share the same certificate, which is not a proper way of achieving security.
+To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours.
 
 \section{Commented listings of the programs}
-Here are all the file for \verb@myIRC@ to work.
+Here are all the files for the election protocol to work.
 
-\subsection{SocketFactory}~
-    \lstinputlisting{../src/RMISSLClientSocketFactory.java}
-    \lstinputlisting{../src/RMISSLServerSocketFactory.java}
-\subsection{Server files}~
-	\lstinputlisting{../src/myIRCObject.java}
-	\lstinputlisting{../src/myIRCServer.java}`
-	\lstinputlisting{../src/myIRCInterface.java}
-\subsection{Client files}~
-	\lstinputlisting{../src/myIRC.java}
-	\lstinputlisting{../src/myIRCCallbackInterface.java}
-	\lstinputlisting{../src/myIRCCallbackImpl.java}
-\subsection{Other}~
-	\lstinputlisting{../make}
+\lstinputlisting{../code/node.c}
+\lstinputlisting{../code/election.c}
+\lstinputlisting{../code/config}
+
 
 \end{document}
 
