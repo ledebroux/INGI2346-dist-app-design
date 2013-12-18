@@ -15,12 +15,17 @@ int receive(){
   return 0;
 }
 
+int index(int x, int y, int col){
+  int index = x*col+y;
+  return index;
+}
+
 /*
  * Computes the diameter of the graph
  * Using the Floyd-Warshall algorithm to get
  *    the shortest path between all nodes
  */
-int compute_diameter(int vertices, unsigned int edges[][2]){
+int compute_diameter(int vertices, int* edges, int size){
   /* Begining of Floyd-Warshall algorithm */
   int dist[vertices][vertices];
   int i, j;
@@ -32,13 +37,24 @@ int compute_diameter(int vertices, unsigned int edges[][2]){
   for(i=0; i<vertices; i++){
     dist[i][i]=0;
   }
-  printf("size %lu\n", sizeof(edges)/sizeof(edges[0]));
-  for(j=0; j<(int)(sizeof(edges)/sizeof(edges[0])); j++){
-    int u = edges[j][0];
-    int v = edges[j][1];
-    dist[u][v] = 1;
+  printf("size %lu\n", sizeof(edges)/(sizeof(edges[0])*2));
+  for(j=0; j<size; j++){
+    int u_index = index(j, 0, 2);
+    int v_index = index(j, 1, 2);
+    int u = edges[u_index];
+    int v = edges[v_index];
+    dist[u-1][v-1] = 1;
     printf("u: %i and v: %i\n", u, v);
   }
+
+  // for (i=0;i<vertices;i++){
+  //   for(j=0;j<vertices;j++){
+  //     printf("%d ",dist[i][j]);
+  //   }
+  //   printf("\n");
+  // }
+  // printf("\n");
+
   int k;
   for(k=0; k<vertices; k++){
     for (i=0; i<vertices; i++){
@@ -51,12 +67,15 @@ int compute_diameter(int vertices, unsigned int edges[][2]){
   }
   /* End of Floyd-Warshall algorithm */
 
-  for (i=0;i<vertices;i++){
+  
+for (i=0;i<vertices;i++){
     for(j=0;j<vertices;j++){
       printf("%d ",dist[i][j]);
     }
     printf("\n");
   }
+  printf("\n");
+
  
   /* Computation of the diameter */
   int diameter = 0;
@@ -83,21 +102,24 @@ void print_array(int* array, int size)
   printf("\n");
 }
 
-// void print_matrix(int** matrix, int row, int col)
-// {
-//   int i, j;
-//   for (i=0;i<row;i++){
-//     for(j=0;j<col;j++){
-//       printf("%d ",matrix[i][j]);
-//     }
-//     printf("\n");
-//   }
-// }
+/* Currently not working */
+void print_matrix(int row, int col, int matrix[row][col])
+{
+  int i, j;
+  for (i=0;i<row;i++){
+    for(j=0;j<col;j++){
+      printf("%d ",matrix[i][j]);
+    }
+    printf("\n");
+  }
+}
 
 int main()
 {
   unsigned int n = 5;
-  unsigned int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
+  unsigned int nbEdge = 6;
+  // unsigned int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
+  int e[] = {1,2, 1,4, 2,3, 3,1, 4,5, 5,1};
 
   /*
    * VAR INIT
@@ -105,9 +127,9 @@ int main()
 
   unsigned int i, j;
 
-  int diameter = compute_diameter(n, e);
+  int diameter = compute_diameter(n, e, nbEdge);
 
-  int adjMatrix[n-1][n-1];
+  int adjMatrix[n][n];
   for (i=0;i<n;i++){
     for(j=0;j<n;j++){
       adjMatrix[i][j]=0;
@@ -132,11 +154,16 @@ int main()
    *    the number of ingoing edges to i+1
    */
   for(i = 1; i <= n; i++){
-    for(j=0; j<sizeof(e)/sizeof(e[0]); j++){
-      if(e[j][0] == i){
-        adjMatrix[i-1][e[j][1]-1] = 1;
+    for(j=0; j<sizeof(e)/(sizeof(e[0])*2); j++){
+      // printf("j: %i\n", j);
+      int e_index = index(j, 0, 2);
+      // printf("for index: %i\n", e_index);
+      if(e[e_index] == i){
+        e_index = index(j, 1, 2);
+        // printf("if index: %i\n", e_index);
+        adjMatrix[i-1][e[e_index]-1] = 1;
         outgoing[i-1]++;
-        ingoing[e[j][1]-1]++;
+        ingoing[e[e_index]-1]++;
       }
     }
   }
@@ -161,14 +188,14 @@ int main()
 
   /* At this point of the execution, all tids are known */
 
-  //print_matrix(adjMatrix, n, n);
+  print_matrix(n, n, adjMatrix); /* Currently not working */
 
-  for (i=0;i<n;i++){
-    for(j=0;j<n;j++){
-      printf("%d ",adjMatrix[i][j]);
-    }
-    printf("\n");
-  }
+  // for (i=0;i<n;i++){
+  //   for(j=0;j<n;j++){
+  //     printf("%d ",adjMatrix[i][j]);
+  //   }
+  //   printf("\n");
+  // }
 
   print_array(tid, n);
   print_array(outgoing, n);
