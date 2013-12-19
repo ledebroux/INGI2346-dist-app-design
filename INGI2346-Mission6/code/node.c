@@ -5,7 +5,7 @@
 #include "pvm3.h"
 
 /*
- * Sends a string to a task
+ * Sends a array of int with message label to a task
  */
 int send_array(int* array, char* label, int tid, int size)
 {
@@ -25,6 +25,10 @@ int send_array(int* array, char* label, int tid, int size)
   return 0;
 }
 
+/*
+ * Sends a integer with a message label to a task
+ */
+
 int send_int(int i, char* label, int tid)
 {
   char msg[100];
@@ -39,7 +43,7 @@ int send_int(int i, char* label, int tid)
 }
 
 /*
- * Sends an id to a task
+ * Sends an integer to a task
  */
 int sendId(int tid, int max_id)
 {
@@ -49,6 +53,9 @@ int sendId(int tid, int max_id)
   return 0;
 }
 
+/*
+ * Sends an id to a specific task, with point-to-point messages
+ */
 int unicastSendId(int* tid, int ntasks, int max_id)
 {
   int i;
@@ -57,6 +64,9 @@ int unicastSendId(int* tid, int ntasks, int max_id)
   }
 }
 
+/*
+ * Sends an id to a group of tasks, with multicast messages.
+ */
 int multicastSendId(int* tid, int ntasks, int max_id)
 {
   pvm_initsend(PvmDataDefault);
@@ -78,12 +88,16 @@ int receiveId(int tid)
 }
 
 /*
- * Algorithm of election
+ * Algorithm of election : we first send our max_id to all our children
+ * and then we wait for messages from our parents.
+ * The number of messages we have to receive corresponds to the number of
+ * parents, but we have to specify from which tid we want to receive a message.
+ * It avoids receiving 2 messages from the same tid in the same "round".
  */
 int election(int in, int* parents, int out, int* children, int* max_id)
 {
   /* One of the two lines below has to be commented, 
-   * and the other, uncommented */
+   * and the other, uncommented to use multicast or unicast */
   multicastSendId(children, out, *max_id);
   //unicastSendId(children, out, *max_id);
   int i;
@@ -96,6 +110,7 @@ int election(int in, int* parents, int out, int* children, int* max_id)
   return 0;
 }
 
+
 int main()
 {
   int ptid;
@@ -107,7 +122,11 @@ int main()
 
   ptid=pvm_parent(); /*get tid of task that started me*/
 
-  /* the node receives the number of nodes it can reach */
+  /* 
+   * The node received the initiliziation information from the main taks
+   * with its id, the number of ingoing edges (parents), the number of
+   * outgoing edges (childrens) and the diameter of the graph.
+   */
   int cc;
   cc = pvm_recv(-1,-1);
   pvm_upkint(initData, 4, 1);
@@ -117,9 +136,11 @@ int main()
   outgoing = initData[2];
   diameter = initData[3];
 
-  send_array(initData, "My initData", ptid, 4);
+  send_array(initData, "My initData", ptid, 4); // For debugging
 
-  /* the node receives the tid of the nodes it can reach */
+  /* The node receives 2 arrays of integer with the list of tids 
+   * of its parents (ingoing edges) and its childrens (outgoing edges)
+   */
   int children[outgoing];
   int parents[ingoing];
   cc = pvm_recv(-1,-1);
@@ -134,15 +155,22 @@ int main()
   /* inform the creator of the tid of the nodes it can reach */
   //send_array(children, "My children", ptid, outgoing[0]); /* if uncommented, a receive() needs to be present at the right place in node.c */
 
+  /*
+   * Waits for the message "start" sent by the main task, and which allows the node
+   * to start the election protocol. The message start sent to each node allows
+   * a sort of synchronization between the different nodes.
+   */
   char start[10];
   cc = pvm_recv(-1,-1);
   pvm_upkstr(start);
 
   int i;
+  /* iteration of the algorithm of "diamater" times */
   for(i=0; i<diameter; i++){
     election(ingoing, parents, outgoing, children, &max_id);
   }
 
+  /* The node send its max_id to the main task when the election protocol is over */
   send_int(max_id, "Max Id", ptid);
 
 
