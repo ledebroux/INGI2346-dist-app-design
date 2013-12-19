@@ -173,7 +173,12 @@ int main(int argc, char *argv[])
   unsigned int n = 0;
   unsigned int nbEdge = 0;
   int e[200][2];
-  int result = parseFile(argv[1], &n, &nbEdge, e);
+  if(strlen(argv) = 2)){
+    int result = parseFile(argv[1], &n, &nbEdge, e);
+  } else {
+    printf("No graph file provided");
+    return -1;
+  }
   // unsigned int n = 5;
   // unsigned int nbEdge = 6;
   // int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
