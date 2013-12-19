@@ -100,6 +100,9 @@ int compute_diameter(int vertices, int row, int edges[row][2]){
 
 int main()
 {
+  /*
+   * Graph initialization : TODO (in a .txt file, and pass it in argument)
+   */
   unsigned int n = 5;
   unsigned int nbEdge = 6;
   int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
@@ -119,8 +122,8 @@ int main()
 
   int diameter = compute_diameter(n, nbEdge, e);
 
-  int adjMatrix[n][n];
-  for (i=0;i<n;i++){
+  int adjMatrix[n][n]; // Adjacency matrix for the graph
+  for (i=0;i<n;i++){ // Initialization of all elem to 0
     for(j=0;j<n;j++){
       adjMatrix[i][j]=0;
     }
@@ -129,9 +132,9 @@ int main()
   int cc;
   int tid[n-1]; /* Array containing the tid of each node */
 
-  int outgoing[n-1];
-  int ingoing[n-1];
-  for(i = 1; i <= n; i++){
+  int outgoing[n-1]; /* Array containing the number of outgoing edges for each node */
+  int ingoing[n-1]; /* Array containing the number of ingoing edges for each node */
+  for(i = 1; i <= n; i++){ 
     outgoing[i-1]=0;
     ingoing[i-1]=0;
   }
@@ -154,7 +157,7 @@ int main()
   }
 
   /*
-   * Transpose the AdjMatrix
+   * Transpose the AdjMatrix (to be used to advertise the ingoing edges to a task)
    */
   int TadjMatrix[n][n];
   for(i=0; i<n; i++){
@@ -165,10 +168,9 @@ int main()
 
   /*
    * Creates one pvm_task for each node in the graph
-   * and gives them as arg:
-   *    - outgoing
-   *    - ingoing
-   *    - id
+   * Send a array of int containg several initiliziation information to the task.
+   * This information are : the Id of the node, the number of ingoing edges,
+   * the number of outgoing edges, and the diameter.
    */
   for(i = 1; i <= n; i++){
     cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
@@ -192,6 +194,12 @@ int main()
   print_array(tid, n);
   // print_array(outgoing, n);
   // print_array(ingoing, n);
+
+  /*
+   * For each node, we build 2 array of int containing the tids of the parents
+   * (via ingoing edges) and the tids of the children (via outgoing edges).
+   * We advertise those arrays to each node.
+   */
 
   for(i=1; i<=n; i++){
     int children[outgoing[i-1]];
@@ -223,6 +231,13 @@ int main()
     //receive();
   }
 
+  /*
+   * We send a message "start" to all nodes to advertise the tasks they can begin
+   * the election protocol. Without this message, all nodes begin the election
+   * protocol while the others have not yet received the information about 
+   * children and parents tids.
+   */
+
   for(i=1; i<=n; i++){
     pvm_initsend(PvmDataDefault);
     pvm_pkstr("Start");
@@ -230,6 +245,9 @@ int main()
   }
   // printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
 
+  /*
+   * Finally, we wait for the max_id of each node, to verify the result of the election protocol.
+   */ 
   for(i=1; i<=n; i++){
     receive();
   }
