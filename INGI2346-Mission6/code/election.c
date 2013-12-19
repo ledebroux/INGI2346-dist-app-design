@@ -1,6 +1,69 @@
 /* election.c */
 #include <stdio.h>
+#include <string.h>
 #include "pvm3.h"
+
+
+char *replace_char (char *str, char find, char *replace) {
+    char *ret=str;
+    char *wk, *s;
+
+    wk = s = strdup(str);
+
+    while (*s != 0) {
+        if (*s == find){
+            while(*replace)
+                *str++ = *replace++;
+            ++s;
+        } else
+            *str++ = *s++;
+    }
+    *str = '\0';
+    free(wk);
+    return ret;
+}
+
+/*
+ * Parse the file to build the graph
+ */
+ int parseFile(char* fileName, int* n, int* nbEdges, int edge[200][2]){
+  FILE* file = NULL;
+  file = fopen(fileName,"r");
+  char descr[4096] = "";
+
+  if (file != NULL){
+    fscanf(file, "%d", n);
+    fseek(file, +1, SEEK_CUR);
+    fscanf(file, "%d", nbEdges);
+    fseek(file, +1, SEEK_CUR);
+    fscanf(file, "%s", descr);
+    fclose(file);
+
+
+    char *temp1 = replace_char(descr,'{',"");
+    char *temp2 = replace_char(temp1,'}',"");
+    char *graph = replace_char(temp2,',',"");
+
+    int i;  
+    for(i = 0; i<strlen(graph); i++){
+        if(i%2 == 0){
+          edge[i/2][0] = descr[i] - '0';
+        } else {
+          edge[i/2][1] = descr[i] - '0';
+        }
+        
+    }
+
+
+  } else {
+    printf("The input file was not found\n");
+    exit(0);
+  }
+
+
+  return 0;
+ }
+
 
 /*
  * Receives a string sent by a task
@@ -98,14 +161,22 @@ int compute_diameter(int vertices, int row, int edges[row][2]){
   return diameter;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   /*
-   * Graph initialization : TODO (in a .txt file, and pass it in argument)
+   * Graph initialization : Parse the file given in argument.
+   * The file must contains on the first line the number of nodes,
+   * the number of edges on the second line,
+   * and a description of the edges on the third line
    */
-  unsigned int n = 5;
-  unsigned int nbEdge = 6;
-  int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
+
+  unsigned int n = 0;
+  unsigned int nbEdge = 0;
+  int e[200][2];
+  int result = parseFile(argv[1], &n, &nbEdge, e);
+  // unsigned int n = 5;
+  // unsigned int nbEdge = 6;
+  // int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
 
   /*
   unsigned int n = 6;
