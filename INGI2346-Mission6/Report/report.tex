@@ -51,11 +51,12 @@ In the \verb@code@ folder, here are the files you can find :
 \item[config] Contains the initial configuration for the \verb@pvm@ process. Here it contains only the path to the executables, for any machines names. It avoids to have to place the executables in the \verb@PVM_ARCH@ directory of the \verb@pvm@ directory.
 \item[election.c] Contains the code for the main tasks that will create the different \verb@pvm@ tasks associated with each node and compute the \verb@diameter@ of the graph. More practically, it parses the input graph, then creates the pvm tasks associated to each node, compute the diameter ans makes the nodes aware of the others nodes they can reach.
 \item[node.c] Contains the code for the different nodes of the graph : first the node are created, then they start the election algorithm.
+\item[graph.txt] Contains the description of the graph : the first line is dedicated to the number of nodes in the graph, the second line is dedicated to the number of edges in the graph, and the third line is dedicated to describe how nodes are connected in the following form : \verb@{n1, n2},{n1,n3},{n2,n3}@, which means that \verb@n1@ has an outgoing edge toward \verb@n2@ and \verb@n3@, and that \verb@n2@ has one towards \verb@n3@. The number of edge is limited to 200.
 \end{description}
 
 To build the executable files, please execute the \verb@makefile@ that you can find at the root of the directory (\verb@./make@). The \verb@makefile@ compiles \verb@election.c@ and \verb@node.c@.\\
 
-To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours.
+To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours. Then modify the graph configuration if u want, and launch \verb@./election graph.txt@ by providing the graph configuration file.
 
 \section{Commented listings of the programs}
 Here are all the files for the election protocol to work.
@@ -63,6 +64,8 @@ Here are all the files for the election protocol to work.
 \lstinputlisting{../code/node.c}
 \lstinputlisting{../code/election.c}
 \lstinputlisting{../code/config}
+\lstinputlisting{../code/graph.txt}
+\lstinputlisting{../code/Makefile}
 
 
 \end{document}
