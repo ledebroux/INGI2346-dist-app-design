@@ -62,6 +62,7 @@ int unicastSendId(int* tid, int ntasks, int max_id)
   for(i=0; i<ntasks; i++){
     sendId(tid[i], max_id);
   }
+  return 0;
 }
 
 /*
@@ -75,6 +76,18 @@ int multicastSendId(int* tid, int ntasks, int max_id)
   return 0;
 }
 
+int broadcastSendId(int max_id){
+  int mtid = pvm_mytid();
+  char grp[100];
+  strcpy(grp,"grp");
+  char nb[10];
+  sprintf(nb, " %d", mtid);
+  strcat(grp,nb);
+  pvm_initsend(PvmDataDefault);
+  pvm_pkint(&max_id, 1, 1);
+  pvm_bcast(grp,1);
+  return 0;
+}
 /*
  * Receives an id sent by a task
  */
@@ -94,15 +107,24 @@ int receiveId(int tid)
  * parents, but we have to specify from which tid we want to receive a message.
  * It avoids receiving 2 messages from the same tid in the same "round".
  */
-int election(int in, int* parents, int out, int* children, int* max_id)
+int election(int in, int* parents, int out, int* children, int* max_id, int sendingType, int ptid)
 {
   /* One of the two lines below has to be commented, 
    * and the other, uncommented to use multicast or unicast */
-  multicastSendId(children, out, *max_id);
-  //unicastSendId(children, out, *max_id);
+  if(sendingType == 1){
+    unicastSendId(children, out, *max_id);
+  }
+  else if(sendingType == 2){
+    multicastSendId(children, out, *max_id);
+  }
+  else if(sendingType == 3){
+    broadcastSendId(*max_id);
+  }
+  send_int(*max_id, "Sending done", ptid);
   int i;
   for(i=0; i<in; i++){
     int id = receiveId(parents[i]);
+    send_int(*max_id, "Recv done", ptid);
     if(id > *max_id){
       *max_id = id;
     }
@@ -118,9 +140,10 @@ int main()
   int ingoing;
   int outgoing;
   int diameter;
+  int sendingType;
   int initData[3];
 
-  ptid=pvm_parent(); /*get tid of task that started me*/
+  ptid = pvm_parent(); /*get tid of task that started me*/
 
   /* 
    * The node received the initiliziation information from the main taks
@@ -129,14 +152,15 @@ int main()
    */
   int cc;
   cc = pvm_recv(-1,-1);
-  pvm_upkint(initData, 4, 1);
+  pvm_upkint(initData, 5, 1);
 
   max_id = initData[0];
   ingoing = initData[1];
   outgoing = initData[2];
   diameter = initData[3];
+  sendingType = initData[4];
 
-  send_array(initData, "My initData", ptid, 4); // For debugging
+  send_array(initData, "My initData", ptid, 5); // For debugging
 
   /* The node receives 2 arrays of integer with the list of tids 
    * of its parents (ingoing edges) and its childrens (outgoing edges)
@@ -147,7 +171,24 @@ int main()
   pvm_upkint(children, outgoing, 1);
   pvm_upkint(parents, ingoing, 1);
 
-  /* TODO */ 
+  int i;
+
+  if(sendingType == 2){
+  /* 
+   * When a node wants to send, with broadcast, it is to all of its children
+   * the broadcast group must be joined by all of its children.
+   * Thus, one node must going the groups of its parents
+   */
+    for(i=0; i<ingoing; i++){
+      char grp[100];
+      strcpy(grp,"grp");
+      char nb[10];
+      sprintf(nb, " %d", parents[i]);
+      strcat(grp,nb);
+      pvm_joingroup(grp);
+    }
+  }
+   
   //send_int(children[0], "My id", ptid);
   send_array(children, "My children", ptid, outgoing);
   send_array(parents, "My parents", ptid, ingoing);
@@ -164,10 +205,10 @@ int main()
   cc = pvm_recv(-1,-1);
   pvm_upkstr(start);
 
-  int i;
   /* iteration of the algorithm of "diamater" times */
   for(i=0; i<diameter; i++){
-    election(ingoing, parents, outgoing, children, &max_id);
+    //send_int(i, "Round", ptid);
+    election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);
   }
 
   /* The node send its max_id to the main task when the election protocol is over */

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pvm3.h"
 
-
+/*
 char *replace_char (char *str, char find, char *replace) {
     char *ret=str;
     char *wk, *s;
@@ -22,10 +22,12 @@ char *replace_char (char *str, char find, char *replace) {
     free(wk);
     return ret;
 }
+*/
 
 /*
  * Parse the file to build the graph
  */
+ /*
  int parseFile(char* fileName, int* n, int* nbEdges, int edge[200][2]){
   FILE* file = NULL;
   file = fopen(fileName,"r");
@@ -63,7 +65,7 @@ char *replace_char (char *str, char find, char *replace) {
 
   return 0;
  }
-
+*/
 
 /*
  * Receives a string sent by a task
@@ -170,6 +172,8 @@ int main(int argc, char *argv[])
    * and a description of the edges on the third line
    */
 
+
+/*
   unsigned int n = 0;
   unsigned int nbEdge = 0;
   int e[200][2];
@@ -179,9 +183,19 @@ int main(int argc, char *argv[])
     printf("No graph file provided");
     return -1;
   }
-  // unsigned int n = 5;
-  // unsigned int nbEdge = 6;
-  // int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
+*/
+
+
+  /*
+  1 = unicast
+  2 = multicast
+  3 = broadcast
+  */
+  int SENDINGTYPE = 1;
+
+  unsigned int n = 5;
+  unsigned int nbEdge = 6;
+  int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
 
   /*
   unsigned int n = 6;
@@ -252,10 +266,11 @@ int main(int argc, char *argv[])
     cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
     printf("Node %i spawned\n", i);
     if(cc == 1){
-      int initData[4] = {i, ingoing[i-1], outgoing[i-1], diameter};
-      //print_array(initData, 4);
+      int initSize = 5;
+      int initData[5] = {i, ingoing[i-1], outgoing[i-1], diameter, SENDINGTYPE};
+      print_array(initData, initSize);
       pvm_initsend(PvmDataDefault);
-      pvm_pkint(initData, 4, 1);
+      pvm_pkint(initData, initSize, 1);
       pvm_send(tid[i-1],1);
       receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
     }
@@ -320,6 +335,10 @@ int main(int argc, char *argv[])
     pvm_send(tid[i-1],1);
   }
   // printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
+
+  for(i=1; i<diameter*n*6; i++){
+    receive();
+  }
 
   /*
    * Finally, we wait for the max_id of each node, to verify the result of the election protocol.
