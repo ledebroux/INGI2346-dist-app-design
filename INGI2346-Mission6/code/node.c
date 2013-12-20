@@ -107,7 +107,7 @@ int receiveId(int tid)
  * parents, but we have to specify from which tid we want to receive a message.
  * It avoids receiving 2 messages from the same tid in the same "round".
  */
-int election(int in, int* parents, int out, int* children, int* max_id, int sendingType, int ptid, int myid)
+int election(int in, int* parents, int out, int* children, int* max_id, int sendingType, int ptid)
 {
   /* One of the two lines below has to be commented, 
    * and the other, uncommented to use multicast or unicast */
@@ -120,12 +120,9 @@ int election(int in, int* parents, int out, int* children, int* max_id, int send
   else if(sendingType == 3){
     broadcastSendId(*max_id);
   }
-  //send_int(myid, "Sending done", ptid);
   int i;
   for(i=0; i<in; i++){
-    //send_int(myid, "Waiting RCV", ptid);
     int id = receiveId(parents[i]);
-    //send_int(myid, "Recv done", ptid);
     if(id > *max_id){
       *max_id = id;
     }
@@ -136,7 +133,6 @@ int election(int in, int* parents, int out, int* children, int* max_id, int send
 
 int main()
 {
-  int id;
   int ptid;
   int max_id;
   int ingoing;
@@ -157,7 +153,6 @@ int main()
   pvm_upkint(initData, 5, 1);
 
   max_id = initData[0];
-  id = max_id;
   ingoing = initData[1];
   outgoing = initData[2];
   diameter = initData[3];
@@ -192,11 +187,10 @@ int main()
     }
   }
    
-  //pvm_joingroup("MainGroup");
+  // send_array(children, "My children", ptid, outgoing);
+  // send_array(parents, "My parents", ptid, ingoing);
 
-  //send_int(children[0], "My id", ptid);
-  send_array(children, "My children", ptid, outgoing);
-  send_array(parents, "My parents", ptid, ingoing);
+  send_int(max_id, "Created", ptid);
 
   /* inform the creator of the tid of the nodes it can reach */
   //send_array(children, "My children", ptid, outgoing[0]); /* if uncommented, a receive() needs to be present at the right place in node.c */
@@ -206,31 +200,13 @@ int main()
    * to start the election protocol. The message start sent to each node allows
    * a sort of synchronization between the different nodes.
    */
-
-  /*
-  char round[10];
-  for(i=0; i<diameter; i++){
-    cc = pvm_recv(-1,-1);
-    pvm_upkstr(round);
-    //send_int(i, "Round", ptid);
-    election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);
-    pvm_initsend(PvmDataDefault);
-    pvm_pkstr("Done");
-    pvm_send(ptid,1);
-  }
-  */
-
   char start[10];
   cc = pvm_recv(-1,-1);
   pvm_upkstr(start);
 
   /* iteration of the algorithm of "diamater" times */
   for(i=0; i<diameter; i++){
-    //send_int(i, "Round", ptid);
-    election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid, id);
-    //pvm_barrier("MainGroup", 6);
-    // sleep(1);
-    //send_int(id, "Barrier done", ptid);
+    election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);
   }
   //pvm_barrier("MainGroup", 6);
   //send_int(id, "ForLoop over", ptid);

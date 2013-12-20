@@ -267,11 +267,11 @@ int main(/*int argc, char *argv[]*/)
     if(cc == 1){
       int initSize = 5;
       int initData[5] = {i, ingoing[i-1], outgoing[i-1], diameter, SENDINGTYPE};
-      print_array(initData, initSize);
+      //print_array(initData, initSize);
       pvm_initsend(PvmDataDefault);
       pvm_pkint(initData, initSize, 1);
       pvm_send(tid[i-1],1);
-      receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
+      //receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
     }
 
   }
@@ -298,16 +298,13 @@ int main(/*int argc, char *argv[]*/)
     int offset_parents = 0;
     for(j=0; j<n; j++){
       if(adjMatrix[i-1][j]==1){
-        //printf("%i has child %i\n", i, tid[j]);
         children[offset_children] = tid[j];
         offset_children++;
       }
       if(TadjMatrix[i-1][j]==1){
-        //printf("%i is reachable by %i\n", i, tid[j]);
         parents[offset_parents] = tid[j];
         offset_parents++;
       }
-      // TODO set the value for parent wrt. TadjMatrix
     }
     pvm_initsend(PvmDataDefault);
     //print_array(children, outgoing[i-1]);
@@ -316,9 +313,10 @@ int main(/*int argc, char *argv[]*/)
     pvm_pkint(parents, ingoing[i-1], 1);
     pvm_send(tid[i-1],1);
 
-    receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
-    receive();
+    //receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
     //receive();
+
+    receive();
   }
 
   /*
@@ -328,32 +326,10 @@ int main(/*int argc, char *argv[]*/)
    * children and parents tids.
    */
 
-/*
-  for(i=0; i<diameter; i++){
-    for(j=0; j<n; j++){
-      pvm_initsend(PvmDataDefault);
-      pvm_pkstr("Round");
-      pvm_send(tid[j],1);
-    }
-    for(j=0; j<n; j++){
-      receive();
-    }
-  }
-
-  for(i=1; i<diameter*n; i++){
-    receive();
-  }
-*/
-
   for(i=1; i<=n; i++){
     pvm_initsend(PvmDataDefault);
     pvm_pkstr("Start");
     pvm_send(tid[i-1],1);
-  }
-  // printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
-
-  for(i=0; i<n/*diameter*(n+2*nbEdge+1)*/; i++){
-    //receive();
   }
 
   /*
