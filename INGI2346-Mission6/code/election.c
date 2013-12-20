@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pvm3.h"
 
-
+/*
 char *replace_char (char *str, char find, char *replace) {
     char *ret=str;
     char *wk, *s;
@@ -22,12 +22,12 @@ char *replace_char (char *str, char find, char *replace) {
     free(wk);
     return ret;
 }
-
+*/
 
 /*
  * Parse the file to initialise the variables n, nbEdges, edge
  */
- 
+ /*
  int parseFile(char* fileName, int* n, int* nbEdges, int edge[200][2]){
   FILE* file = NULL;
   file = fopen(fileName,"r");
@@ -41,31 +41,25 @@ char *replace_char (char *str, char find, char *replace) {
     fscanf(file, "%s", descr);
     fclose(file);
 
-
     char *temp1 = replace_char(descr,'{',"");
     char *temp2 = replace_char(temp1,'}',"");
     char *graph = replace_char(temp2,',',"");
 
     int i;  
     for(i = 0; i<strlen(graph); i++){
-        if(i%2 == 0){
-          edge[i/2][0] = descr[i] - '0';
-        } else {
-          edge[i/2][1] = descr[i] - '0';
-        }
-        
+      if(i%2 == 0){
+        edge[i/2][0] = descr[i] - '0';
+      } else {
+        edge[i/2][1] = descr[i] - '0';
+      } 
     }
-
-
   } else {
     printf("The input file was not found\n");
     exit(0);
   }
-
-
   return 0;
  }
-
+*/
 
 /*
  * Receives a string sent by a task
@@ -79,11 +73,6 @@ int receive(){
   printf("from t%i: %s\n",tid,msg);
   return 0;
 }
-
-// int index(int x, int y, int col){
-//   int index = x*col+y;
-//   return index;
-// }
 
 /* 
  * Prints an array of int
@@ -163,7 +152,7 @@ int compute_diameter(int vertices, int row, int edges[row][2]){
   return diameter;
 }
 
-int main(int argc, char *argv[])
+int main(/*int argc, char *argv[]*/)
 {
   /*
    * Graph initialization : Parse the file given in argument.
@@ -171,9 +160,7 @@ int main(int argc, char *argv[])
    * the number of edges on the second line,
    * and a description of the edges on the third line
    */
-
-
-
+   /*
   unsigned int n = 0;
   unsigned int nbEdge = 0;
   int e[200][2];
@@ -183,9 +170,7 @@ int main(int argc, char *argv[])
     printf("No graph file provided");
     return -1;
   }
-
-
-
+  */
   /*
   1 = unicast
   2 = multicast
@@ -193,17 +178,30 @@ int main(int argc, char *argv[])
   */
   int SENDINGTYPE = 1;
 
-  /*unsigned int n = 5;
+  /*
+  unsigned int n = 4;
+  unsigned int nbEdge = 4;
+  int e[][2] = {{1,2}, {2,3}, {3,4}, {4,1}};
+  */
+
+  /*
+  unsigned int n = 5;
+  unsigned int nbEdge = 5;
+  int e[][2] = {{1,2}, {2,3}, {3,4}, {4,5}, {5,1}};
+  */
+
+  /*
+  unsigned int n = 5;
   unsigned int nbEdge = 6;
   int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
   */
 
-  /*
+  
   unsigned int n = 6;
   unsigned int nbEdge = 8;
   int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, 
                 {4,5}, {5,1}, {3,6}, {6,4}};
-  */
+  
 
   /*
    * VAR INIT
@@ -330,6 +328,23 @@ int main(int argc, char *argv[])
    * children and parents tids.
    */
 
+/*
+  for(i=0; i<diameter; i++){
+    for(j=0; j<n; j++){
+      pvm_initsend(PvmDataDefault);
+      pvm_pkstr("Round");
+      pvm_send(tid[j],1);
+    }
+    for(j=0; j<n; j++){
+      receive();
+    }
+  }
+
+  for(i=1; i<diameter*n; i++){
+    receive();
+  }
+*/
+
   for(i=1; i<=n; i++){
     pvm_initsend(PvmDataDefault);
     pvm_pkstr("Start");
@@ -337,7 +352,7 @@ int main(int argc, char *argv[])
   }
   // printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
 
-  for(i=1; i<diameter*n*6; i++){
+  for(i=0; i<n/*diameter*(n+2*nbEdge+1)*/; i++){
     //receive();
   }
 
@@ -345,6 +360,7 @@ int main(int argc, char *argv[])
    * Finally, we wait for the max_id of each node, to verify the result of the election protocol.
    */ 
   for(i=1; i<=n; i++){
+    printf("%i\n", i);
     receive();
   }
 
