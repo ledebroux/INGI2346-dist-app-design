@@ -120,11 +120,11 @@ int election(int in, int* parents, int out, int* children, int* max_id, int send
   else if(sendingType == 3){
     broadcastSendId(*max_id);
   }
-  send_int(*max_id, "Sending done", ptid);
+  //send_int(*max_id, "Sending done", ptid);
   int i;
   for(i=0; i<in; i++){
     int id = receiveId(parents[i]);
-    send_int(*max_id, "Recv done", ptid);
+    //send_int(*max_id, "Recv done", ptid);
     if(id > *max_id){
       *max_id = id;
     }

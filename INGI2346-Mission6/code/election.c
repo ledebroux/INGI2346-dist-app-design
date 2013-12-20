@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
   unsigned int n = 0;
   unsigned int nbEdge = 0;
   int e[200][2];
-  if(argc == 2){
+  if(strlen(argv) = 2)){
     int result = parseFile(argv[1], &n, &nbEdge, e);
   } else {
     printf("No graph file provided");
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
    * the number of outgoing edges, and the diameter.
    */
   for(i = 1; i <= n; i++){
-    //cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
+    cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
     printf("Node %i spawned\n", i);
     if(cc == 1){
       int initSize = 5;
@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
   // printf("size of e %lu\n", sizeof(e)/sizeof(e[0]));
 
   for(i=1; i<diameter*n*6; i++){
-    receive();
+    //receive();
   }
 
   /*
