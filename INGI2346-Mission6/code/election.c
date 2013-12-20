@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pvm3.h"
 
-/*
+
 char *replace_char (char *str, char find, char *replace) {
     char *ret=str;
     char *wk, *s;
@@ -22,12 +22,12 @@ char *replace_char (char *str, char find, char *replace) {
     free(wk);
     return ret;
 }
-*/
+
 
 /*
  * Parse the file to initialise the variables n, nbEdges, edge
  */
- /*
+ 
  int parseFile(char* fileName, int* n, int* nbEdges, int edge[200][2]){
   FILE* file = NULL;
   file = fopen(fileName,"r");
@@ -65,7 +65,7 @@ char *replace_char (char *str, char find, char *replace) {
 
   return 0;
  }
-*/
+
 
 /*
  * Receives a string sent by a task
@@ -173,17 +173,17 @@ int main(int argc, char *argv[])
    */
 
 
-/*
+
   unsigned int n = 0;
   unsigned int nbEdge = 0;
   int e[200][2];
-  if(strlen(argv) = 2)){
+  if(argc == 2){
     int result = parseFile(argv[1], &n, &nbEdge, e);
   } else {
     printf("No graph file provided");
     return -1;
   }
-*/
+
 
 
   /*
@@ -193,9 +193,10 @@ int main(int argc, char *argv[])
   */
   int SENDINGTYPE = 1;
 
-  unsigned int n = 5;
+  /*unsigned int n = 5;
   unsigned int nbEdge = 6;
   int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
+  */
 
   /*
   unsigned int n = 6;
