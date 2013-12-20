@@ -24,7 +24,7 @@ char *replace_char (char *str, char find, char *replace) {
 }
 
 /*
- * Parse the file to build the graph
+ * Parse the file to initialise the variables n, nbEdges, edge
  */
  int parseFile(char* fileName, int* n, int* nbEdges, int edge[200][2]){
   FILE* file = NULL;
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
    * the number of outgoing edges, and the diameter.
    */
   for(i = 1; i <= n; i++){
-    //cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
+    cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);
     printf("Node %i spawned\n", i);
     if(cc == 1){
       int initData[4] = {i, ingoing[i-1], outgoing[i-1], diameter};
