@@ -10,7 +10,6 @@
  * The code comes from 
  * http://stackoverflow.com/questions/16573206/c-replace-char-in-char-array
  */
- 
 char *replace_char (char *str, char find, char *replace) {
     char *ret=str;
     char *wk, *s;
@@ -26,10 +25,8 @@ char *replace_char (char *str, char find, char *replace) {
             *str++ = *s++;
     }
     *str = '\0';
-    free(wk);
     return ret;
 }
-
 
 /*
  * Parse the file to initialise the variables n, nbEdges, edge
@@ -61,22 +58,23 @@ int parseFile(char* fileName, int* n, int* nbEdges, int edge[200][2]){
     }
   } else {
     printf("The input file was not found\n");
-    exit(0);
+    return -1;
   }
   return 0;
  }
 
-
 /*
  * Receives a string sent by a task
  */
-int receive(){
+int receive(int print){
   char msg[100];
   int cc, tid;
   cc = pvm_recv(-1,-1);
   pvm_bufinfo(cc,(int *)0,(int *)0,&tid);
   pvm_upkstr(msg);
-  printf("from t%i: %s\n",tid,msg);
+  if(print == 1){
+    printf("from t%i: %s\n",tid,msg);
+  }
   return 0;
 }
 
@@ -128,7 +126,6 @@ int compute_diameter(int vertices, int row, int edges[row][2]){
     int u = edges[j][0];
     int v = edges[j][1];
     dist[u-1][v-1] = 1;
-    // printf("u: %i and v: %i\n", u, v);
   }
 
   int k;
@@ -142,8 +139,6 @@ int compute_diameter(int vertices, int row, int edges[row][2]){
     }
   }
   /* End of Floyd-Warshall algorithm */
-
-  // print_matrix(vertices, vertices, dist);
  
   /* Computation of the diameter */
   int diameter = 0;
@@ -154,7 +149,6 @@ int compute_diameter(int vertices, int row, int edges[row][2]){
       }
     }
   }
-  // printf("Diameter: %i\n", diameter);
   return diameter;
 }
 
@@ -166,53 +160,39 @@ int main(int argc, char *argv[])
    * the number of edges on the second line,
    * and a description of the edges on the third line
    */
+  int SENDINGTYPE;
   unsigned int n = 0;
   unsigned int nbEdge = 0;
   int e[200][2];
-  if(argc == 2){
+  if(argc == 3){
     int result = parseFile(argv[1], &n, &nbEdge, e);
+    SENDINGTYPE = (int)(argv[2][0] - '0');
   } else {
-    printf("No graph file provided");
+    //printf("No graph file provided");
+    printf("usage: ./election file mode\n");
+    printf("  file: .txt file containing the graph\n");
+    printf("  mode:\n    1: point-to-point\n    2: multicast\n    2: broadcast");
     return -1;
   }
   
-  /*
-  Choose the type of communication you want to use:
-  1 : unicast
-  2 : multicast
-  3 : broadcast
-  */
-  int SENDINGTYPE = 1;
-
-  /*
-  unsigned int n = 4;
-  unsigned int nbEdge = 4;
-  int e[][2] = {{1,2}, {2,3}, {3,4}, {4,1}};
-  */
-
-  /*
-  unsigned int n = 5;
-  unsigned int nbEdge = 5;
-  int e[][2] = {{1,2}, {2,3}, {3,4}, {4,5}, {5,1}};
-  */
-
-  /*
-  unsigned int n = 5;
-  unsigned int nbEdge = 6;
-  int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, {4,5}, {5,1}};
-  */
-
-  /*
-  unsigned int n = 6;
-  unsigned int nbEdge = 8;
-  int e[][2] = {{1,2}, {1,4}, {2,3}, {3,1}, 
-                {4,5}, {5,1}, {3,6}, {6,4}};
-  */
+  if(SENDINGTYPE == 1){
+    printf("Point-to-point communication\n");
+  }
+  else if(SENDINGTYPE == 2){
+    printf("Multicast communication\n");
+  }
+  else if(SENDINGTYPE == 3){
+    printf("Broadcast communication\n");
+  }
+  else{
+    printf("The mode should be 1, 2 or 3\n");
+    printf("  Use ./election to see the usage");
+    return -1;
+  }
 
   /*
    * VAR INIT
    */
-
   unsigned int i, j;
 
   int diameter = compute_diameter(n, nbEdge, e);
@@ -274,22 +254,13 @@ int main(int argc, char *argv[])
       int initSize = 6;
       int initData[6] = {i, ingoing[i-1], outgoing[i-1], 
           diameter, SENDINGTYPE, n};
-      //print_array(initData, initSize);
       pvm_initsend(PvmDataDefault);
       pvm_pkint(initData, initSize, 1);
       pvm_send(tid[i-1],1);
-      //receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
     }
 
   }
-
   /* At this point of the execution, all tids are known */
-
-  // print_matrix(n, n, adjMatrix);
-  // print_matrix(n, n, TadjMatrix);
-  // print_array(tid, n);
-  // print_array(outgoing, n);
-  // print_array(ingoing, n);
 
   /*
    * For each node, we build 2 array of int containing the tids of the parents
@@ -313,16 +284,10 @@ int main(int argc, char *argv[])
       }
     }
     pvm_initsend(PvmDataDefault);
-    //print_array(children, outgoing[i-1]);
-    //print_array(parents, ingoing[i-1]);
     pvm_pkint(children, outgoing[i-1], 1);
     pvm_pkint(parents, ingoing[i-1], 1);
     pvm_send(tid[i-1],1);
-
-    //receive(); /* if uncommented, a send() needs to be present at the right place in node.c */
-    //receive();
-
-    receive();
+    receive(0);
   }
 
   /*
@@ -341,7 +306,7 @@ int main(int argc, char *argv[])
    * Finally, we wait for the max_id of each node, to verify the result of the election protocol.
    */ 
   for(i=1; i<=n; i++){
-    receive();
+    receive(1);
   }
 
   printf("End of election process\n");

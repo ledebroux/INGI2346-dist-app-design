@@ -28,7 +28,6 @@ int send_array(int* array, char* label, int tid, int size)
 /*
  * Sends a integer with a message label to a task
  */
-
 int send_int(int i, char* label, int tid)
 {
   char msg[100];
@@ -88,9 +87,10 @@ int broadcastSendId(int max_id, int ptid){
   strcat(grp,nb);
   pvm_initsend(PvmDataDefault);
   pvm_pkint(&max_id, 1, 1);
-  pvm_bcast("grp",1);
+  pvm_bcast(grp,1);
   return 0;
 }
+
 /*
  * Receives an id sent by a task
  */
@@ -166,8 +166,6 @@ int main()
   sendingType = initData[4];
   n = initData[5];
 
-  //send_array(initData, "My initData", ptid, 5); // For debugging
-
   /* The node receives 2 arrays of integer with the list of tids 
    * of its parents (ingoing edges) and its childrens (outgoing edges)
    */
@@ -191,17 +189,22 @@ int main()
       char nb[10];
       sprintf(nb, " %d", parents[i]);
       strcat(grp,nb);
-      pvm_joingroup("grp");
+      pvm_joingroup(grp);
     }
+  /* This group is useful to synchronize the election rounds when using bcast
+   * It could be used for the other modes too although not needed.
+   * Due to our receive function, it is not strictly needed, even in broadcast
+   */
+    pvm_joingroup("NodesGroup");
   }
-  pvm_joingroup("NodesGroup");
-  // send_array(children, "My children", ptid, outgoing);
-  // send_array(parents, "My parents", ptid, ingoing);
 
+  /*
+   * The following lines could be done using a barrier on a group
+   * containing all the nodes, instead of telling the server that
+   * the creation is done and wait for a start message.
+   */
+  //pvm_barrier("NodesGroup", n);
   send_int(max_id, "Created", ptid);
-
-  /* inform the creator of the tid of the nodes it can reach */
-  //send_array(children, "My children", ptid, outgoing[0]); /* if uncommented, a receive() needs to be present at the right place in node.c */
 
   /*
    * Waits for the message "start" sent by the main task, and which allows the node
@@ -212,13 +215,15 @@ int main()
   cc = pvm_recv(-1,-1);
   pvm_upkstr(start);
 
-  /* iteration of the algorithm of "diamater" times
-   * Synchronise between the different nodes at every round.
+  /* Iteration of the algorithm of "diamater" times
+   * Synchronise between the different nodes at every round for the broadcast
    */
-
   for(i=0; i<diameter; i++){
     election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);
-    pvm_barrier("NodesGroup", n);
+    if(sendingType == 3){
+      /* Not really needed due to the implem of our receive function */
+      pvm_barrier("NodesGroup", n);
+    }
   }
 
   /* The node send its max_id to the main task when the election protocol is over */
