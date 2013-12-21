@@ -42,17 +42,21 @@
 %Write a narrative describing how you went about writing and testing each program you write. The narrative should describe what choices you faced and which you made. We should get a pretty good sense of what your program looks like from reading the narrative. So far as testing goes, describe how you went about choosing your test cases, what they were, and their results.
 
 \section{Reasoning for the implementation of the algorithm}
+First note that you can choose the mode of sending in the election protocol. This is done by launching the program with an additional parameter : 1 for unicast, 2 for multicast and 3 for broadcast. In function of the parameter, the method called in order to send the \verb@max_id@ is different (see code below). However, the global idea remains the same, especially for multicast and unicast mode. The broadcast mode will be further explained in the second section of this report.\\
+
 The election algorithm is implemented as follows : 
 \begin{enumerate}
 \item The main task will spawn different \verb@pvm@ tasks corresponding to the nodes of the graph. Before spawning the new nodes, it will compute the diameter of the graph, the number of outgoing edges and ingoing edges for each nodes. After spawning the nodes, the main task send theses precomputed information to each node.
-\item Each newly spawned node will send back its \verb@tid@ to the main task, who is gonna compute for each node, the list of reachable \verb@tids@ and the list of \verb@tids@ that can reach them. The main task then sends this information to each node.
+\item Each newly spawned node will send back its \verb@tid@ to the main task, who is gonna compute for each node, the list of reachable \verb@tids@ and the list of \verb@tids@ that can reach them. The main task then sends this information to each node, as well as the mode of sending chosen by the user.
 \item Before each node initiates the election protocol, they have to wait for a \verb@start@ message from the main task. This message is sent only when all tasks are spawned and aware of the nodes they can reach or by which nodes they can be reached. This sort of \textit{synchronisation} between nodes is necessary to ensure consistency of the informations across the graph at the beginning of the election protocol.
 \item First, each \verb@pvm@ tasks corresponding to the different nodes of the graph send the value of their \verb@max_id@ variable to their children (i.e. the nodes that it can reach, linked by an outgoing edge).
 \item Then each nodes wait for the \verb@max_id@ value from their parents (i.e. the nodes linked by an ingoing edge). However, it is not sufficient to wait for \verb@n@ messages, where \verb@n@ represents the number of parents. Indeed, it is somehow possible and it happens that a parent node will send twice its \verb@max_id@ while another one has not yet sent its first \verb@max_id@. Therefore, we force the nodes to wait for messages from specific \verb@tid@, in a certain order. Therefore, we are sure to receive exactly one message per parents node at each round of the election protocol. Regarding the value of the \verb@max_id@ value, if the value received from a parents node is bigger than the value of the \verb@max_id@ of the receiver, then the \verb@max_id@ is updated to this new value.
-\item TODO : we have to synchronise all rounds of the election protocol for each node... WHY ? HOW ? ( At the end of each round of the election protocol, the \verb@pvm@ tasks send back their \verb@tid@ to the main task to advertise it of the end of a round. The main task waits for the \verb@tid@ of each node before multicasting a \verb@go@ message to the node, meaning that they can pursue with the next round.
+\item At the beginning we thought we had to synchronise all rounds of the election protocol for each node, to avoid that a node could receive a message from a parents of an ulterior round. We thought we could implement this synchronization in the following manner : at the end of each round of the election protocol, the \verb@pvm@ tasks send back their \verb@tid@ to the main task to advertise it of the end of a round. The main task waits for the \verb@tid@ of each node before multicasting a \verb@go@ message to the node, meaning that they can pursue with the next round. However, after carefully reading the \verb@manpage@, it seems that the \verb@recv@ operation preserves the order of the message. Therefore, this surplus of messages is useless.
+\item However, when launching the program, we see an non-deterministic behavior. Sometimes, the algorithm is just stucked. We could think that this is a deadlock produced by a node waiting for a message he never receives, and the other cannot do anything while the first haven't receive the message. To debug this problem, we try to analyse the trace of each \verb@pvm task@. \huge{TODO!!!}
 \end{enumerate}
 
 \section{Discussion of the problems involved in the use of the groups of processes}
+ \huge{TODO!!!}\normalsize
 
 \section{The source code directory and instruction for building the executable files}
 In the \verb@code@ folder, here are the files you can find : 
@@ -65,7 +69,7 @@ In the \verb@code@ folder, here are the files you can find :
 
 To build the executable files, please execute the \verb@makefile@ that you can find at the root of the directory (\verb@./make@). The \verb@makefile@ compiles \verb@election.c@ and \verb@node.c@.\\
 
-To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours. Then modify the graph configuration if u want, and launch \verb@./election graph.txt@ by providing the graph configuration file.
+To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours. Then modify the graph configuration if u want, and launch \verb@./election graph.txt@ by providing the graph configuration file and the mode of sending (1 for unicast, 2 for multicast, and 3 for broadcast).
 
 \section{Commented listings of the programs}
 Here are all the files for the election protocol to work.

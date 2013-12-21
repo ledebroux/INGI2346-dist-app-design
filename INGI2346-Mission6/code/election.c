@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
    * Creates one pvm_task for each node in the graph
    * Send a array of int containg several initiliziation information to the task.
    * This information are : the Id of the node, the number of ingoing edges,
-   * the number of outgoing edges, and the diameter.
+   * the number of outgoing edges, the diameter, the type for sending (point-to-point (1), multicast (2) or broadcast (3))
    */
   for(i = 1; i <= n; i++){
     cc = pvm_spawn("node",(char **)0,0,"",1,&tid[i-1]);

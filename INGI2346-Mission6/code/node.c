@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "pvm3.h"
 #include <unistd.h>
+#include "pvm3.h"
 
 /*
  * Sends a array of int with message label to a task
@@ -76,6 +76,9 @@ int multicastSendId(int* tid, int ntasks, int max_id)
   return 0;
 }
 
+/*
+ * Sends the max_id in a broadcast mode.
+ */
 int broadcastSendId(int max_id, int ptid){
   int mtid = pvm_mytid();
   char grp[100];
@@ -106,6 +109,8 @@ int receiveId(int tid)
  * The number of messages we have to receive corresponds to the number of
  * parents, but we have to specify from which tid we want to receive a message.
  * It avoids receiving 2 messages from the same tid in the same "round".
+ * Note that you can choose the mode of sending between unicast, multicast or
+ * broadcast.
  */
 int election(int in, int* parents, int out, int* children, int* max_id, int sendingType, int ptid)
 {
@@ -176,9 +181,9 @@ int main()
 
   if(sendingType == 3){
   /* 
-   * When a node wants to send, with broadcast, it is to all of its children
+   * When a node wants to send, with broadcast, it is to all of its children.
    * the broadcast group must be joined by all of its children.
-   * Thus, one node must going the groups of its parents
+   * Thus, one node have to go to the groups of its parents
    */
     for(i=0; i<ingoing; i++){
       char grp[100];
@@ -207,7 +212,10 @@ int main()
   cc = pvm_recv(-1,-1);
   pvm_upkstr(start);
 
-  /* iteration of the algorithm of "diamater" times */
+  /* iteration of the algorithm of "diamater" times
+   * Synchronise between the different nodes at every round.
+   */
+
   for(i=0; i<diameter; i++){
     election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);
     pvm_barrier("NodesGroup", n);
