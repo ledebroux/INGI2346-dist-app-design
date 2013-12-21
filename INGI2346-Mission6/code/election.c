@@ -4,6 +4,13 @@
 #include "pvm3.h"
 
 
+/*
+ * Replace a character by another in a string
+ *
+ * The code comes from 
+ * http://stackoverflow.com/questions/16573206/c-replace-char-in-char-array
+ */
+ 
 char *replace_char (char *str, char find, char *replace) {
     char *ret=str;
     char *wk, *s;
