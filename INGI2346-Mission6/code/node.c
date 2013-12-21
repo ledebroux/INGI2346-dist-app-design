@@ -76,7 +76,7 @@ int multicastSendId(int* tid, int ntasks, int max_id)
   return 0;
 }
 
-int broadcastSendId(int max_id){
+int broadcastSendId(int max_id, int ptid){
   int mtid = pvm_mytid();
   char grp[100];
   strcpy(grp,"grp");
@@ -85,7 +85,7 @@ int broadcastSendId(int max_id){
   strcat(grp,nb);
   pvm_initsend(PvmDataDefault);
   pvm_pkint(&max_id, 1, 1);
-  pvm_bcast(grp,1);
+  pvm_bcast("grp",1);
   return 0;
 }
 /*
@@ -118,11 +118,12 @@ int election(int in, int* parents, int out, int* children, int* max_id, int send
     multicastSendId(children, out, *max_id);
   }
   else if(sendingType == 3){
-    broadcastSendId(*max_id);
+    broadcastSendId(*max_id, ptid);
   }
   int i;
   for(i=0; i<in; i++){
-    int id = receiveId(parents[i]);
+    int id;
+    id = receiveId(parents[i]);
     if(id > *max_id){
       *max_id = id;
     }
@@ -139,6 +140,7 @@ int main()
   int outgoing;
   int diameter;
   int sendingType;
+  int n;
   int initData[3];
 
   ptid = pvm_parent(); /*get tid of task that started me*/
@@ -150,15 +152,16 @@ int main()
    */
   int cc;
   cc = pvm_recv(-1,-1);
-  pvm_upkint(initData, 5, 1);
+  pvm_upkint(initData, 6, 1);
 
   max_id = initData[0];
   ingoing = initData[1];
   outgoing = initData[2];
   diameter = initData[3];
   sendingType = initData[4];
+  n = initData[5];
 
-  send_array(initData, "My initData", ptid, 5); // For debugging
+  //send_array(initData, "My initData", ptid, 5); // For debugging
 
   /* The node receives 2 arrays of integer with the list of tids 
    * of its parents (ingoing edges) and its childrens (outgoing edges)
@@ -171,7 +174,7 @@ int main()
 
   int i;
 
-  if(sendingType == 2){
+  if(sendingType == 3){
   /* 
    * When a node wants to send, with broadcast, it is to all of its children
    * the broadcast group must be joined by all of its children.
@@ -183,10 +186,10 @@ int main()
       char nb[10];
       sprintf(nb, " %d", parents[i]);
       strcat(grp,nb);
-      pvm_joingroup(grp);
+      pvm_joingroup("grp");
     }
   }
-   
+  pvm_joingroup("NodesGroup");
   // send_array(children, "My children", ptid, outgoing);
   // send_array(parents, "My parents", ptid, ingoing);
 
@@ -207,13 +210,12 @@ int main()
   /* iteration of the algorithm of "diamater" times */
   for(i=0; i<diameter; i++){
     election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);
+    pvm_barrier("NodesGroup", n);
   }
-  //pvm_barrier("MainGroup", 6);
-  //send_int(id, "ForLoop over", ptid);
-  //pvm_barrier("MainGroup", 6);
+
   /* The node send its max_id to the main task when the election protocol is over */
   send_int(max_id, "Max Id", ptid);
-
-
+  
+  pvm_exit();
   exit(0);
 }
