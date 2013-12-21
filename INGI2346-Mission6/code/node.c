@@ -203,7 +203,6 @@ int main()
    * containing all the nodes, instead of telling the server that
    * the creation is done and wait for a start message.
    */
-  //pvm_barrier("NodesGroup", n);
   send_int(max_id, "Created", ptid);
 
   /*
@@ -216,7 +215,7 @@ int main()
   pvm_upkstr(start);
 
   /* Iteration of the algorithm of "diamater" times
-   * Synchronise between the different nodes at every round for the broadcast
+   * Synchronise between the different nodes at every round.
    */
   for(i=0; i<diameter; i++){
     election(ingoing, parents, outgoing, children, &max_id, sendingType, ptid);

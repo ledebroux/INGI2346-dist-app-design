@@ -48,35 +48,40 @@ The election algorithm is implemented as follows :
 \begin{enumerate}
 \item The main task will spawn different \verb@pvm@ tasks corresponding to the nodes of the graph. Before spawning the new nodes, it will compute the diameter of the graph, the number of outgoing edges and ingoing edges for each nodes. After spawning the nodes, the main task send theses precomputed information to each node.
 \item Each newly spawned node will send back its \verb@tid@ to the main task, who is gonna compute for each node, the list of reachable \verb@tids@ and the list of \verb@tids@ that can reach them. The main task then sends this information to each node, as well as the mode of sending chosen by the user.
-\item Before each node initiates the election protocol, they have to wait for a \verb@start@ message from the main task. This message is sent only when all tasks are spawned and aware of the nodes they can reach or by which nodes they can be reached. This sort of \textit{synchronisation} between nodes is necessary to ensure consistency of the informations across the graph at the beginning of the election protocol. However, that was our first solution. But when we've discovered the possibility to use \verb@pvm_barrier@ to synchronise tasks, it seems to be the best solution. All nodes are part of a group, and before beginning the election protocol, they synchronise each other. In the code, the two solutions can be found, with one commented.
+\item Before each node initiates the election protocol, they have to wait for a \verb@start@ message from the main task. This message is sent only when all tasks are spawned and aware of the nodes they can reach or by which nodes they can be reached. This sort of \textit{synchronisation} between nodes is necessary to ensure consistency of the informations across the graph at the beginning of the election protocol. However, that was our first solution. But when we've discovered the possibility to use \verb@pvm_barrier@ to synchronise tasks, it seems to be the best solution. All nodes are part of a group, and before beginning the election protocol, they synchronise each other. In the code, the two solutions can be found, with one commented. If using a \verb@pvm_barrier@, no communication with the main task is needed.
 \item First, each \verb@pvm@ tasks corresponding to the different nodes of the graph send the value of their \verb@max_id@ variable to their children (i.e. the nodes that it can reach, linked by an outgoing edge).
 \item Then each nodes wait for the \verb@max_id@ value from their parents (i.e. the nodes linked by an ingoing edge). However, it is not sufficient to wait for \verb@n@ messages, where \verb@n@ represents the number of parents. Indeed, it is somehow possible and it happens that a parent node will send twice its \verb@max_id@ while another one has not yet sent its first \verb@max_id@. Therefore, we force the nodes to wait for messages from specific \verb@tid@, in a certain order. Therefore, we are sure to receive exactly one message per parents node at each round of the election protocol. Regarding the value of the \verb@max_id@ value, if the value received from a parents node is bigger than the value of the \verb@max_id@ of the receiver, then the \verb@max_id@ is updated to this new value.
 \item At the beginning we thought we had to synchronise all rounds of the election protocol for each node, to avoid that a node could receive a message from a parents of an ulterior round. We thought we could implement this synchronization in the following manner : at the end of each round of the election protocol, the \verb@pvm@ tasks send back their \verb@tid@ to the main task to advertise it of the end of a round. The main task waits for the \verb@tid@ of each node before multicasting a \verb@go@ message to the node, meaning that they can pursue with the next round. The synchronisation is also possible by using the \verb@pvm_barrier@ on a group containing all nodes, as we discovered while we thought to the broadcast solution. However, after carefully reading the \verb@manpage@, it seems that the \verb@recv@ operation preserves the order of the message. Therefore, this surplus of messages is useless.
 \end{enumerate}
 
 \section{Discussion of the problems involved in the use of the groups of processes}
- \huge{TODO!!!}
+For the broadcast to work, one group needs to be created for each node. The group associated to a node contains its children so that when the node wants to send its \verb@max_id@, it sends it to the group, and all the children may receive it. Due to the way our \verb@receiveId@ function is implemented (making sure we receive one message for each parent), we avoid the deadlocks. Although it is done this way, we create a group containing all the groups and call \verb@pvm_barrier@ at each end of election round. The rounds are thus synchronized. The names of the groups are generated from the \verb@tid@ of the nodes, as the main task sends the tids to the node tasks, we have no conflicts.
  
  \normalsize
 \section{The source code directory and instruction for building the executable files}
 In the \verb@code@ folder, here are the files you can find : 
 \begin{description}
 \item[config] Contains the initial configuration for the \verb@pvm@ process. Here it contains only the path to the executables, for any machines names. It avoids to have to place the executables in the \verb@PVM_ARCH@ directory of the \verb@pvm@ directory.
-\item[election.c] Contains the code for the main tasks that will create the different \verb@pvm@ tasks associated with each node and compute the \verb@diameter@ of the graph. More practically, it parses the input graph, then creates the pvm tasks associated to each node, compute the diameter ans makes the nodes aware of the others nodes they can reach.
-\item[node.c] Contains the code for the different nodes of the graph : first the node are created, then they start the election algorithm.
-\item[graph.txt] Contains the description of the graph : the first line is dedicated to the number of nodes in the graph, the second line is dedicated to the number of edges in the graph, and the third line is dedicated to describe how nodes are connected in the following form : \verb@{n1, n2},{n1,n3},{n2,n3}@, which means that \verb@n1@ has an outgoing edge toward \verb@n2@ and \verb@n3@, and that \verb@n2@ has one towards \verb@n3@. The number of edge is limited to 200.
+\item[election.c] Contains the code for the main tasks that will create the different \verb@pvm@ tasks associated with each node and compute the \verb@diameter@ of the graph. More practically, it parses the input graph, then creates the pvm tasks associated to each node, compute the diameter ans makes the nodes aware of the others nodes they can reach. Eventually, it starts the election.
+\item[node.c] Contains the code for the different nodes of the graph : first the node is created, then it start the election algorithm upon a signal from the main task.
+\item[graph.txt] Contains the description of the graph : the first line is dedicated to the number of nodes in the graph, the second line is dedicated to the number of edges in the graph, and the third line is dedicated to describe how nodes are connected in the following form : \verb@{n1,n2},{n1,n3},{n2,n3},..@, which means that \verb@n1@ has an outgoing edge toward \verb@n2@ and \verb@n3@, and that \verb@n2@ has one towards \verb@n3@. The number of edge is limited to 200. The nodes are represented by integer going from $1$ to $n$, the number of nodes.
 \end{description}
+
+ Some functions are utility functions, and are not used in the submitted version. They can be useful though, so we left them.\\
 
 To build the executable files, please execute the \verb@makefile@ that you can find at the root of the directory (\verb@./make@). The \verb@makefile@ compiles \verb@election.c@ and \verb@node.c@.\\
 
-To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours. Then modify the graph configuration if u want, and launch \verb@./election graph.txt@ by providing the graph configuration file and the mode of sending (1 for unicast, 2 for multicast, and 3 for broadcast).
+To try the program, please launch \verb@./make@, then start \verb@pvm@ with the \verb@config@ file (\verb@pvm config@). Please modify the \verb@config@ file by replacing the path to the \verb@code@ folder to yours. Then modify the graph configuration if u want, and launch \verb@./election graph.txt@ by providing the graph configuration file and the mode of sending (1 for unicast, 2 for multicast, and 3 for broadcast). It may be needed to start \verb@pvmgs&@ when using broadcast so that the groups can be created (it should launch itself automaticaly, but didn't on the machine we used).
 
 \section{Commented listings of the programs}
 Here are all the files for the election protocol to work.
 
 \lstinputlisting{../code/node.c}
 \lstinputlisting{../code/election.c}
-\lstinputlisting{../code/graph.txt}
+\lstinputlisting{../code/graph4.txt}
+\lstinputlisting{../code/graph5_1.txt}
+\lstinputlisting{../code/graph5_2.txt}
+\lstinputlisting{../code/graph6.txt}
 \lstinputlisting{../code/config}
 \lstinputlisting{../code/Makefile}
 
